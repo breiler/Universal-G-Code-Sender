@@ -20,6 +20,7 @@ package com.willwinder.ugs.cli;
 
 import com.willwinder.universalgcodesender.connection.ConnectionDriver;
 import com.willwinder.universalgcodesender.connection.ConnectionFactory;
+import com.willwinder.universalgcodesender.i18n.Localization;
 import com.willwinder.universalgcodesender.model.BackendAPI;
 import com.willwinder.universalgcodesender.pendantui.PendantUI;
 import com.willwinder.universalgcodesender.utils.Settings;
@@ -226,6 +227,7 @@ public class TerminalClient {
      */
     private void initializeBackend() {
         backend = BackendInitializerHelper.getInstance().initialize(configuration);
+        Localization.initialize(backend.getSettings().getLanguage());
 
         // It seems like the settings are working, save them for later.
         SettingsFactory.saveSettings();

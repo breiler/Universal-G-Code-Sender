@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2019 Will Winder
+    Copyright 2016-2020 Will Winder
 
     This file is part of Universal Gcode Sender (UGS).
 
@@ -19,6 +19,12 @@
 package com.willwinder.universalgcodesender.pendantui;
 
 import com.willwinder.universalgcodesender.model.BackendAPI;
+import io.swagger.v3.jaxrs2.integration.JaxrsOpenApiContextBuilder;
+import io.swagger.v3.oas.integration.OpenApiConfigurationException;
+import io.swagger.v3.oas.integration.SwaggerConfiguration;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
 import net.glxn.qrgen.QRCode;
 import net.glxn.qrgen.image.ImageType;
 import org.eclipse.jetty.server.Handler;
@@ -33,13 +39,13 @@ import org.eclipse.jetty.util.resource.Resource;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 import java.io.ByteArrayOutputStream;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.URL;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class will launch a local webserver which will provide a simple pendant interface
@@ -65,6 +71,30 @@ public class PendantUI {
         }
     }
 
+    private void initSwaggerInfo() {
+        OpenAPI oas = new OpenAPI();
+        Info info = new Info()
+                .title("Universal G-code Sender API")
+                .description("This is a API for controlling Universal Gcode Sender through HTTP/RPC calls.")
+                .license(new License()
+                        .name("GNU General Public License v3.0")
+                        .url("https://www.gnu.org/licenses/gpl-3.0.html"));
+
+        oas.info(info);
+        SwaggerConfiguration oasConfig = new SwaggerConfiguration()
+                .openAPI(oas)
+                .prettyPrint(true)
+                .resourcePackages(Stream.of("com.willwinder.universalgcodesender").collect(Collectors.toSet()));
+
+        try {
+            new JaxrsOpenApiContextBuilder<>()
+                    .openApiConfiguration(oasConfig)
+                    .buildContext(true);
+        } catch (OpenApiConfigurationException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
 
     /**
      * Launches the local web server.
@@ -72,8 +102,36 @@ public class PendantUI {
      * @return the url for the pendant interface
      */
     public List<PendantURLBean> start() {
-        server = new Server(port);
+        try {
+            initSwaggerInfo();
+            server = new Server(port);
 
+            ResourceHandler staticResourceHandler = getPendantResourceHandler();
+            ContextHandler swaggerStaticResourceHandlerContext = getSwaggerContextResourceHandler();
+            ServletContextHandler servletContextHandler = getApiResourceHandler();
+
+            HandlerList handlers = new HandlerList();
+            handlers.setHandlers(new Handler[]{servletContextHandler, staticResourceHandler, swaggerStaticResourceHandlerContext, new DefaultHandler()});
+            server.setHandler(handlers);
+            server.start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return getUrlList();
+    }
+
+    private ServletContextHandler getApiResourceHandler() {
+        // Create a servlet servletContextHandler
+        ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
+        servletContextHandler.setContextPath("/api");
+        ServletHolder servletHolder = servletContextHandler.addServlet(ServletContainer.class, "/*");
+        servletHolder.setInitOrder(1);
+        servletHolder.setInitParameter("javax.ws.rs.Application", AppConfig.class.getCanonicalName());
+        return servletContextHandler;
+    }
+
+    private ResourceHandler getPendantResourceHandler() {
         ResourceHandler staticResourceHandler = new ResourceHandler();
         staticResourceHandler.setDirectoriesListed(true);
         staticResourceHandler.setWelcomeFiles(new String[]{"index.html"});
@@ -82,25 +140,33 @@ public class PendantUI {
         ContextHandler staticResourceHandlerContext = new ContextHandler();
         staticResourceHandlerContext.setContextPath("/");
         staticResourceHandlerContext.setHandler(staticResourceHandler);
+        return staticResourceHandler;
+    }
 
-        // Create a servlet servletContextHandler
-        ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        servletContextHandler.setContextPath("/api");
-        ServletHolder servletHolder = servletContextHandler.addServlet(ServletContainer.class, "/*");
-        servletHolder.setInitOrder(1);
-        servletHolder.setInitParameter("javax.ws.rs.Application", AppConfig.class.getCanonicalName());
+    private ContextHandler getSwaggerContextResourceHandler() throws URISyntaxException {
+        ResourceHandler swaggerResourceHandler = new ResourceHandler();
+        swaggerResourceHandler.setDirectoriesListed(true);
+        swaggerResourceHandler.setWelcomeFiles(new String[]{"index.html"});
+
+        swaggerResourceHandler
+                .setResourceBase(Objects.requireNonNull(PendantUI.class.getClassLoader()
+                        .getResource("META-INF/resources/webjars/swagger-ui/3.35.2"))
+                        .toURI().toString());
+
+
+        ResourceHandler docsResourceHandler = new ResourceHandler();
+        docsResourceHandler.setResourceBase(Objects.requireNonNull(PendantUI.class.getClassLoader()
+                .getResource("docs"))
+                .toURI().toString());
+
 
         HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[]{servletContextHandler, staticResourceHandlerContext, new DefaultHandler()});
-        server.setHandler(handlers);
+        handlers.setHandlers(new Handler[]{docsResourceHandler, swaggerResourceHandler});
 
-        try {
-            server.start();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return getUrlList();
+        ContextHandler swaggerStaticResourceHandlerContext = new ContextHandler();
+        swaggerStaticResourceHandlerContext.setContextPath("/docs");
+        swaggerStaticResourceHandlerContext.setHandler(handlers);
+        return swaggerStaticResourceHandlerContext;
     }
 
     /**

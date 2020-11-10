@@ -49,7 +49,7 @@
 
       <ugs.maven-antrun-plugin.version>1.8</ugs.maven-antrun-plugin.version>
 
-      <ugs.nbm-maven-plugin.version>4.4</ugs.nbm-maven-plugin.version>
+      <ugs.nbm-maven-plugin.version>4.5</ugs.nbm-maven-plugin.version>
 
       <ugs.maven-resources-plugin.version>3.1.0</ugs.maven-resources-plugin.version>
     </properties>

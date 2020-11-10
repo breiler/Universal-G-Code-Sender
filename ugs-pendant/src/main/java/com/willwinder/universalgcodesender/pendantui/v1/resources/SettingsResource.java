@@ -2,6 +2,7 @@ package com.willwinder.universalgcodesender.pendantui.v1.resources;
 
 import com.willwinder.universalgcodesender.model.BackendAPI;
 import com.willwinder.universalgcodesender.pendantui.v1.model.Settings;
+import io.swagger.v3.oas.annotations.Operation;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -19,6 +20,7 @@ public class SettingsResource {
     @GET
     @Path("getSettings")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Gets all settings", tags = "Settings")
     public Settings getSettings() {
         com.willwinder.universalgcodesender.utils.Settings settings = backendAPI.getSettings();
         Settings response = new Settings();
@@ -32,6 +34,7 @@ public class SettingsResource {
     @POST
     @Path("setSettings")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Sets all settings", tags = "Settings")
     public void setSettings(Settings settings) throws Exception {
         com.willwinder.universalgcodesender.utils.Settings backendSettings = backendAPI.getSettings();
         backendSettings.setJogFeedRate(settings.getJogFeedRate());

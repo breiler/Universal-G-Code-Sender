@@ -2,6 +2,7 @@ package com.willwinder.universalgcodesender.pendantui.v1.resources;
 
 import com.willwinder.universalgcodesender.model.BackendAPI;
 import com.willwinder.universalgcodesender.pendantui.v1.model.WorkspaceFileList;
+import io.swagger.v3.oas.annotations.Operation;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -29,6 +30,7 @@ public class FilesResource {
     @POST
     @Path("uploadAndOpen")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Operation(summary = "Loads the specified file", tags = "Files")
     public void open(@FormDataParam("file") InputStream fileInputStream, @FormDataParam("file") FormDataBodyPart bodyPart) throws Exception {
         String tempDir = System.getProperty("java.io.tmpdir");
         String fileName = bodyPart.getContentDisposition().getFileName();
@@ -41,6 +43,7 @@ public class FilesResource {
     @POST
     @Path("send")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Sends a loaded file", tags = "Files")
     public void send() throws Exception {
         if (backendAPI.isPaused()) {
             backendAPI.pauseResume();
@@ -52,6 +55,7 @@ public class FilesResource {
     @GET
     @Path("pause")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Pause the file transfer", tags = "Files")
     public void pause() throws Exception {
         if (!backendAPI.isPaused()) {
             backendAPI.pauseResume();
@@ -61,6 +65,7 @@ public class FilesResource {
     @GET
     @Path("cancel")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Cancel the file transfer", tags = "Files")
     public void cancel() throws Exception {
         backendAPI.cancel();
     }
@@ -68,6 +73,7 @@ public class FilesResource {
     @GET
     @Path("getWorkspaceFileList")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Gets a list of files from the workspace directory", tags = "Files")
     public WorkspaceFileList getWorkspaceFileList() {
         List<String> workspaceFileList = backendAPI.getWorkspaceFileList();
         WorkspaceFileList result = new WorkspaceFileList();
@@ -77,6 +83,7 @@ public class FilesResource {
 
     @POST
     @Path("openWorkspaceFile")
+    @Operation(summary = "Opens a workspace file", tags = "Files")
     public void openWorkspaceFile(@QueryParam("file") String file) throws Exception {
         backendAPI.openWorkspaceFile(file);
     }

@@ -6,6 +6,7 @@ import com.willwinder.universalgcodesender.listeners.ControllerStatus;
 import com.willwinder.universalgcodesender.model.BackendAPI;
 import com.willwinder.universalgcodesender.model.UnitUtils;
 import com.willwinder.universalgcodesender.pendantui.v1.model.Status;
+import io.swagger.v3.oas.annotations.Operation;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -22,6 +23,7 @@ public class StatusResource {
     @GET
     @Path("getStatus")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Gets the current status of the machine", tags = "Settings")
     public Status getStatus() {
         Status status = new Status();
 

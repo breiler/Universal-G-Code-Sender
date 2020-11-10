@@ -5,13 +5,10 @@ import com.willwinder.universalgcodesender.model.BackendAPI;
 import com.willwinder.universalgcodesender.pendantui.v1.model.Macro;
 import com.willwinder.universalgcodesender.services.JogService;
 import com.willwinder.universalgcodesender.utils.SettingsFactory;
+import io.swagger.v3.oas.annotations.Operation;
 
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +25,7 @@ public class MacrosResource {
     @GET
     @Path("getMacroList")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Gets a list of defined macros", tags = "Macros")
     public List<Macro> getMacroList() {
         return SettingsFactory.loadSettings().getMacros()
                 .stream()
@@ -44,6 +42,7 @@ public class MacrosResource {
     @POST
     @Path("runMacro")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Executes the specified macro", tags = "Macros")
     public void executeMacro(Macro macro) throws Exception {
         MacroHelper.executeCustomGcode(macro.getGcode(), backendAPI);
     }
