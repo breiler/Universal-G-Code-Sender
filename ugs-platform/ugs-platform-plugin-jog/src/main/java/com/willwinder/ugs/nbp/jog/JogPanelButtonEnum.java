@@ -18,6 +18,8 @@
  */
 package com.willwinder.ugs.nbp.jog;
 
+import com.willwinder.universalgcodesender.model.Direction;
+
 import javax.swing.*;
 
 /**
@@ -26,20 +28,18 @@ import javax.swing.*;
  * @author Joacim Breiler
  */
 public enum JogPanelButtonEnum {
-    BUTTON_XPOS(1, 0, 0,"icons/xpos.png","X+", SwingConstants.CENTER, SwingConstants.LEFT),
-    BUTTON_XNEG(-1, 0, 0,"icons/xneg.png","X-",  SwingConstants.CENTER, SwingConstants.RIGHT),
-    BUTTON_YPOS(0, 1, 0,"icons/ypos.png","Y+", SwingConstants.BOTTOM, SwingConstants.CENTER),
-    BUTTON_YNEG(0, -1, 0,"icons/yneg.png","Y-", SwingConstants.TOP, SwingConstants.CENTER),
-    BUTTON_ZPOS(0, 0, 1,"icons/zpos.png","Z+", SwingConstants.BOTTOM, SwingConstants.CENTER),
-    BUTTON_ZNEG(0, 0, -1,"icons/zneg.png","Z-", SwingConstants.TOP, SwingConstants.CENTER),
-    BUTTON_DIAG_XNEG_YNEG(-1, -1, 0, "icons/diag-xneg-yneg.png", null, SwingConstants.TOP, SwingConstants.CENTER),
-    BUTTON_DIAG_XNEG_YPOS(-1, 1, 0, "icons/diag-xneg-ypos.png", null, SwingConstants.TOP, SwingConstants.CENTER),
-    BUTTON_DIAG_XPOS_YNEG(1, -1, 0, "icons/diag-xpos-yneg.png", null,  SwingConstants.TOP, SwingConstants.CENTER),
-    BUTTON_DIAG_XPOS_YPOS(1, 1, 0, "icons/diag-xpos-ypos.png", null, SwingConstants.TOP, SwingConstants.CENTER);
+    BUTTON_XPOS(new Direction(1d, 0d, 0d),"icons/xpos.png","X+", SwingConstants.CENTER, SwingConstants.LEFT),
+    BUTTON_XNEG(new Direction(-1d, 0d, 0d),"icons/xneg.png","X-",  SwingConstants.CENTER, SwingConstants.RIGHT),
+    BUTTON_YPOS(new Direction(0d, 1d, 0d),"icons/ypos.png","Y+", SwingConstants.BOTTOM, SwingConstants.CENTER),
+    BUTTON_YNEG(new Direction(0d, -1d, 0d),"icons/yneg.png","Y-", SwingConstants.TOP, SwingConstants.CENTER),
+    BUTTON_ZPOS(new Direction(0d, 0d, 1d),"icons/zpos.png","Z+", SwingConstants.BOTTOM, SwingConstants.CENTER),
+    BUTTON_ZNEG(new Direction(0d, 0d, -1d),"icons/zneg.png","Z-", SwingConstants.TOP, SwingConstants.CENTER),
+    BUTTON_DIAG_XNEG_YNEG(new Direction(-1d, -1d, 0d), "icons/diag-xneg-yneg.png", null, SwingConstants.TOP, SwingConstants.CENTER),
+    BUTTON_DIAG_XNEG_YPOS(new Direction(-1d, 1d, 0d), "icons/diag-xneg-ypos.png", null, SwingConstants.TOP, SwingConstants.CENTER),
+    BUTTON_DIAG_XPOS_YNEG(new Direction(1d, -1d, 0d), "icons/diag-xpos-yneg.png", null,  SwingConstants.TOP, SwingConstants.CENTER),
+    BUTTON_DIAG_XPOS_YPOS(new Direction(1d, 1d, 0d), "icons/diag-xpos-ypos.png", null, SwingConstants.TOP, SwingConstants.CENTER);
 
-    private final int x;
-    private final int y;
-    private final int z;
+    private final Direction direction;
     private final String iconUrl;
     private final String text;
     private final Integer verticalAligment;
@@ -48,9 +48,7 @@ public enum JogPanelButtonEnum {
     /**
      * Constructor
      *
-     * @param x - the X direction to jog
-     * @param y - the Y direction to jog
-     * @param z - the Z direction to jog
+     * @param direction - the  direction to jog
      * @param iconUrl - a relative resource url
      * @param text - an optional text to b
      * @param verticalAligment   Sets the vertical position of the text relative to the icon
@@ -70,10 +68,8 @@ public enum JogPanelButtonEnum {
      *                           <li>{@code SwingConstants.TRAILING} (the default)
      *                           </ul>
      */
-    JogPanelButtonEnum(int x, int y, int z, String iconUrl, String text, Integer verticalAligment, Integer horisontalAligment) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    JogPanelButtonEnum(Direction direction, String iconUrl, String text, Integer verticalAligment, Integer horisontalAligment) {
+        this.direction = direction;
         this.iconUrl = iconUrl;
         this.text = text;
         this.verticalAligment = verticalAligment;
@@ -81,15 +77,19 @@ public enum JogPanelButtonEnum {
     }
 
     public int getX() {
-        return x;
+        return direction.getX().intValue();
     }
 
     public int getY() {
-        return y;
+        return direction.getY().intValue();
     }
 
     public int getZ() {
-        return z;
+        return direction.getZ().intValue();
+    }
+
+    public Direction getDirection() {
+        return direction;
     }
 
     public String getIconUrl() {

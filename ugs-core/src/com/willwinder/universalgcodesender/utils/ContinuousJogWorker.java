@@ -23,6 +23,7 @@ import com.willwinder.universalgcodesender.listeners.ControllerStatus;
 import com.willwinder.universalgcodesender.model.Alarm;
 import com.willwinder.universalgcodesender.model.Axis;
 import com.willwinder.universalgcodesender.model.BackendAPI;
+import com.willwinder.universalgcodesender.model.Direction;
 import com.willwinder.universalgcodesender.model.Position;
 import com.willwinder.universalgcodesender.model.UGSEvent;
 import com.willwinder.universalgcodesender.services.JogService;
@@ -142,21 +143,6 @@ public class ContinuousJogWorker implements ControllerListener {
         }
     }
 
-    /**
-     * Sets the direction to jog in a value between 1.0 to -1.0.
-     * The value 0.5 would mean that that axis would move half the step distance.
-     * Zero means that the axis shouldn't be moved at all.
-     *
-     * @param x the direction to move (1.0 to -1.0)
-     * @param y the direction to move (1.0 to -1.0)
-     * @param z the direction to move (1.0 to -1.0)
-     */
-    public void setDirection(float x, float y, float z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-
     @Override
     public void controlStateChange(UGSEvent.ControlState state) {
 
@@ -226,5 +212,18 @@ public class ContinuousJogWorker implements ControllerListener {
         } else {
             stop();
         }
+    }
+
+    /**
+     * Sets the direction to jog in a value between 1.0 to -1.0.
+     * The value 0.5 would mean that that axis would move half the step distance.
+     * Zero means that the axis shouldn't be moved at all.
+     *
+     * @param direction the direction to move
+     */
+    public void setDirection(Direction direction) {
+        x = direction.getX().floatValue();
+        y = direction.getY().floatValue();
+        z = direction.getZ().floatValue();
     }
 }
