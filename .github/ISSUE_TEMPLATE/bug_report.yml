@@ -4,19 +4,16 @@ description: Problems and issues with Universal Gcode Sender
 body:
   - type: markdown
     attributes:
-      # yamllint disable rule:line-length
       value: "
 Thank you for finding the time to report the problem!
 
 We really appreciate community efforts to improve Universal Gcode Sender.
-        
-It is usually helpful to have the log file from UGS, locations for different types of operating systems can be found here
-  * **Windows 7 and higher**: C:/Users/[your username>]/.ugsplatform/2.X/var/log/messages.log
-  * **Windows XP**: C:/Documents and Settings/[your username>]/.ugsplatform/2.X/var/log/messages.log
-  * **Mac**: ~/Library/Application Support/ugsplatform/2.X/dev/var/log/messages.log
-  * **Linux**: ~/.ugsplatform/2.X/var/log/messages.log  
-       "
-      # yamllint enable rule:line-length
+
+It is usually helpful to have the log file from UGS, locations for different types of operating systems can be found here:
+  **Windows 7 and higher**: C:/Users/[your username>]/.ugsplatform/2.X/var/log/messages.log
+  **Windows XP**: C:/Documents and Settings/[your username>]/.ugsplatform/2.X/var/log/messages.log
+  **Mac**: ~/Library/Application Support/ugsplatform/2.X/dev/var/log/messages.log
+  **Linux**: ~/.ugsplatform/2.X/var/log/messages.log"
   - type: dropdown
     attributes:
       label: Version
