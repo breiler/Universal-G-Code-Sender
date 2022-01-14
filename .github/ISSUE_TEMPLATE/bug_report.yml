@@ -31,6 +31,25 @@ body:
         - "Other"
     validations:
       required: true
+  - type: dropdown
+    attributes:
+      label: Hardware / Firmware
+      description: >
+        What kind of hardware / firmware are you using
+      multiple: false
+      options:
+        - "GRBL 1.1"
+        - "GRBL 0.9"
+        - "GRBL 0.8"
+        - "Grbl_ESP32"
+        - "FluidNC"
+        - "TinyG"
+        - "g2core"
+        - "GrblHAL"
+        - "Smoothieware"
+        - "Other (add details about it below)"
+    validations:
+      required: true
   - type: textarea
     attributes:
       label: What happened
