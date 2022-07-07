@@ -21,6 +21,8 @@
  */
 package com.willwinder.ugs.nbm.visualizer.renderables;
 
+import com.willwinder.ugs.nbm.visualizer.shared.GL;
+import com.willwinder.ugs.nbm.visualizer.shared.GLDrawable;
 import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -73,9 +75,9 @@ public class SizeDisplay extends Renderable {
     }
 
     @Override
-    public void init(GLAutoDrawable drawable) {
-        renderer = new TextRenderer(new Font("SansSerif", Font.PLAIN, 72));
-        renderer.setColor(color[0], color[1], color[2], color[3]);
+    public void init(GLDrawable drawable) {
+        //renderer = new TextRenderer(new Font("SansSerif", Font.PLAIN, 72));
+        //renderer.setColor(color[0], color[1], color[2], color[3]);
         textRendererDirty = false;
     }
 
@@ -86,8 +88,8 @@ public class SizeDisplay extends Renderable {
     }
 
     @Override
-    public void draw(GLAutoDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseCoordinates, Position rotation) {
-        if (idle) return;
+    public void draw(GLDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseCoordinates, Position rotation) {
+        /*if (idle) return;
 
         if (textRendererDirty) init(drawable);
 
@@ -95,7 +97,7 @@ public class SizeDisplay extends Renderable {
         double buffer = maxSide * 0.03;
         double offset = buffer*2;
 
-        GL2 gl = drawable.getGL().getGL2();
+        GL gl = drawable.getGL();
 
             // X
             gl.glPushMatrix();
@@ -204,7 +206,7 @@ public class SizeDisplay extends Renderable {
                         0f, textScaleFactor);
                 renderer.end3DRendering();
                 }
-            gl.glPopMatrix();
+            gl.glPopMatrix();*/
     }
     
 }

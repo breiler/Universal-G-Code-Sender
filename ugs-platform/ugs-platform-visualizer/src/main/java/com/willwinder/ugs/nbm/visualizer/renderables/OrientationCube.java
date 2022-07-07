@@ -23,18 +23,20 @@
 
 package com.willwinder.ugs.nbm.visualizer.renderables;
 
-import static com.jogamp.opengl.GL.GL_CULL_FACE;
-import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
-import com.jogamp.opengl.GL2;
-import static com.jogamp.opengl.GL2ES3.GL_QUADS;
-import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions;
+import com.willwinder.ugs.nbm.visualizer.shared.GL;
+import com.willwinder.ugs.nbm.visualizer.shared.GLDrawable;
 import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.willwinder.universalgcodesender.model.Position;
+
 import java.awt.Font;
 import java.awt.geom.Rectangle2D;
+
+import static com.jogamp.opengl.GL.GL_CULL_FACE;
+import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
+import static com.jogamp.opengl.GL2ES3.GL_QUADS;
 
 public class OrientationCube extends Renderable {
   private final float size;
@@ -65,24 +67,24 @@ public class OrientationCube extends Renderable {
   }
 
   @Override
-  public void init(GLAutoDrawable drawable) {
-    renderer = new TextRenderer(new Font("SansSerif", Font.PLAIN, 72));
-    renderer.setColor(0.2f, 0.2f, 0.2f, 1f);
+  public void init(GLDrawable drawable) {
+    //renderer = new TextRenderer(new Font("SansSerif", Font.PLAIN, 72));
+    //renderer.setColor(0.2f, 0.2f, 0.2f, 1f);
 
     // Compute the scale factor of the largest string which will make
     // them all fit on the faces of the cube
-    Rectangle2D bounds = renderer.getBounds("Z+");
-    float w = (float) bounds.getWidth();
+    //Rectangle2D bounds = renderer.getBounds("Z+");
+    //float w = (float) bounds.getWidth();
 
-    textScaleFactor = size / (w * 1.7f);
+    //textScaleFactor = size / (w * 1.7f);
   }
 
   @Override
-  public void draw(GLAutoDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseCoordinates, Position rotation) {
-    GL2 gl = drawable.getGL().getGL2();
+  public void draw(GLDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseCoordinates, Position rotation) {
+    /*GL gl = drawable.getGL();
 
-    int ySize = drawable.getDelegatedDrawable().getSurfaceHeight();
-    int xSize = drawable.getDelegatedDrawable().getSurfaceWidth();
+    int ySize = drawable.getSurfaceHeight();
+    int xSize = drawable.getSurfaceWidth();
 
     // Set viewport to the corner.
     float fromEdge = 0.8f;
@@ -98,10 +100,10 @@ public class OrientationCube extends Renderable {
         drawCube(gl);
     gl.glPopMatrix();
 
-    gl.glViewport(0, 0, xSize, ySize);
+    gl.glViewport(0, 0, xSize, ySize);*/
   }
 
-  private void drawCube(GL2 gl) {
+  private void drawCube(GL gl) {
     // Six faces of cube
     // Top face
     gl.glPushMatrix();
@@ -141,7 +143,7 @@ public class OrientationCube extends Renderable {
     gl.glPopMatrix();
   }
 
-  private void drawFace(GL2 gl,
+  private void drawFace(GL gl,
                         float faceSize,
                         float[] color,
                         float[] border,

@@ -24,6 +24,9 @@ import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUquadric;
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions;
 import static com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions.VISUALIZER_OPTION_TOOL;
+
+import com.willwinder.ugs.nbm.visualizer.shared.GL;
+import com.willwinder.ugs.nbm.visualizer.shared.GLDrawable;
 import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.willwinder.universalgcodesender.model.Position;
 import java.awt.Color;
@@ -58,14 +61,14 @@ public final class Tool extends Renderable {
     }
 
     @Override
-    public void init(GLAutoDrawable drawable) {
-        glu = new GLU();
-        gq = glu.gluNewQuadric();
+    public void init(GLDrawable drawable) {
+        //glu = new GLU();
+        //gq = glu.gluNewQuadric();
     }
 
     @Override
-    public void draw(GLAutoDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseCoordinates, Position rotation) {
-        GL2 gl = drawable.getGL().getGL2();
+    public void draw(GLDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseCoordinates, Position rotation) {
+        GL gl = drawable.getGL();
         
         double scale = 1. / scaleFactor;
         gl.glPushMatrix();
@@ -73,10 +76,10 @@ public final class Tool extends Renderable {
             gl.glScaled(scale, scale, scale);
 
             gl.glColor4fv(VisualizerOptions.colorToFloatArray(toolColor), 0);
-            glu.gluQuadricNormals(gq, GLU.GLU_SMOOTH);
-            glu.gluCylinder(gq, 0f, .03f, .2, 16, 1);
+            //glu.gluQuadricNormals(gq, GLU.GLU_SMOOTH);
+            //glu.gluCylinder(gq, 0f, .03f, .2, 16, 1);
             gl.glTranslated(0, 0, 0.2);
-            glu.gluCylinder(gq, 0.03f, .0f, .01, 16, 1);
+            //glu.gluCylinder(gq, 0.03f, .0f, .01, 16, 1);
         gl.glPopMatrix();
     }
 }

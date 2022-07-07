@@ -22,6 +22,8 @@ import com.jogamp.opengl.GL2
 import com.jogamp.opengl.GLAutoDrawable
 import com.jogamp.opengl.util.gl2.GLUT
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions
+import com.willwinder.ugs.nbm.visualizer.shared.GL
+import com.willwinder.ugs.nbm.visualizer.shared.GLDrawable
 import com.willwinder.ugs.nbm.visualizer.shared.Renderable
 import com.willwinder.universalgcodesender.model.Position;
 import com.willwinder.universalgcodesender.model.UnitUtils
@@ -39,7 +41,7 @@ class DowelPreview(val description: String, val generator: DowelGenerator) : Ren
       val slices = 20
       val stacks = 20
 
-      private fun drawDowel(gl: GL2, at: Position, diameter: Double, length: Double) {
+      private fun drawDowel(gl: GL, at: Position, diameter: Double, length: Double) {
         gl.glPushMatrix()
           gl.glTranslated(at.x, at.y, 0.0)
           gl.glRotated(180.0, 1.0, 0.0, 0.0)
@@ -51,16 +53,16 @@ class DowelPreview(val description: String, val generator: DowelGenerator) : Ren
     override fun rotate() = true
     override fun center() = true
 
-    override fun init(drawable: GLAutoDrawable?) {
+    override fun init(drawable: GLDrawable?) {
     }
 
     override fun reloadPreferences(vo: VisualizerOptions?) {
     }
 
-    override fun draw(drawable: GLAutoDrawable?, idle: Boolean, machineCoord: Position?, workCoord: Position?, objectMin: Position?, objectMax: Position?, scaleFactor: Double, mouseWorldCoordinates: Position?, rotation: Position?) {
-      if (drawable?.gl?.gL2 == null) return
+    override fun draw(drawable: GLDrawable?, idle: Boolean, machineCoord: Position?, workCoord: Position?, objectMin: Position?, objectMax: Position?, scaleFactor: Double, mouseWorldCoordinates: Position?, rotation: Position?) {
+      if (drawable?.gl == null) return
       val mult: Double = generator.unitMultiplier()
-      drawable.gl.gL2.let {
+      drawable.gl.let {
         for (point in generator.getLocations(UnitUtils.Units.MM)) {
           drawDowel(
               it,

@@ -18,7 +18,8 @@
  */
 package com.willwinder.ugs.nbm.visualizer.actions;
 
-import com.willwinder.ugs.nbm.visualizer.shared.GcodeRenderer;
+import com.willwinder.ugs.nbm.visualizer.shared.Renderer;
+import com.willwinder.ugs.nbm.visualizer.shared.jogl.JOGLGcodeRenderer;
 import com.willwinder.universalgcodesender.model.Position;
 
 import javax.swing.*;
@@ -37,7 +38,7 @@ public class MoveCameraAction extends AbstractAction {
     public static final Position ROTATION_FRONT = new Position(0, -90, 0);
     public static final Position ROTATION_ISOMETRIC = new Position(30, -30, 0);
 
-    private final GcodeRenderer gcodeRenderer;
+    private final Renderer gcodeRenderer;
     private Position position;
     private Position rotation;
     private double zoom;
@@ -50,7 +51,7 @@ public class MoveCameraAction extends AbstractAction {
      * @param rotation      the rotation in which direction the camera should be rotate against
      * @param zoom          the zoom level
      */
-    public MoveCameraAction(GcodeRenderer gcodeRenderer, Position position, Position rotation, double zoom) {
+    public MoveCameraAction(Renderer gcodeRenderer, Position position, Position rotation, double zoom) {
         this.gcodeRenderer = gcodeRenderer;
         this.position = position;
         this.rotation = rotation;
@@ -63,7 +64,7 @@ public class MoveCameraAction extends AbstractAction {
      * @param gcodeRenderer the renderer to be used
      * @param rotation      the rotation in which direction the camera should be rotate against
      */
-    public MoveCameraAction(GcodeRenderer gcodeRenderer, Position rotation) {
+    public MoveCameraAction(Renderer gcodeRenderer, Position rotation) {
         this(gcodeRenderer, CAMERA_POSITION, rotation, 1);
     }
 

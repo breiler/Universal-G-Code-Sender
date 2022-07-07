@@ -16,14 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with UGS.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.willwinder.ugs.nbm.visualizer;
+package com.willwinder.ugs.nbm.visualizer.shared;
 
-import com.jogamp.opengl.util.FPSAnimator;
+import com.willwinder.ugs.nbm.visualizer.VisualizerPopupMenu;
 import com.willwinder.ugs.nbm.visualizer.renderables.GcodeModel;
 import com.willwinder.ugs.nbm.visualizer.renderables.Selection;
 import com.willwinder.ugs.nbm.visualizer.renderables.SizeDisplay;
-import com.willwinder.ugs.nbm.visualizer.shared.GcodeRenderer;
-import com.willwinder.ugs.nbm.visualizer.shared.RotationService;
 import com.willwinder.universalgcodesender.i18n.Localization;
 import com.willwinder.universalgcodesender.listeners.UGSEventListener;
 import com.willwinder.universalgcodesender.model.BackendAPI;
@@ -33,6 +31,7 @@ import com.willwinder.universalgcodesender.model.UnitUtils.Units;
 import com.willwinder.universalgcodesender.model.events.*;
 import com.willwinder.universalgcodesender.utils.Settings;
 import com.willwinder.universalgcodesender.utils.Settings.FileStats;
+import org.openide.util.Lookup;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,36 +44,37 @@ import java.util.prefs.PreferenceChangeListener;
  *
  * @author wwinder
  */
-public class RendererInputHandler implements
+public class DefualtRendererInputHandler implements
         WindowListener, MouseWheelListener, MouseMotionListener,
-        MouseListener, KeyListener, PreferenceChangeListener, UGSEventListener {
-    final private GcodeRenderer gcodeRenderer;
-    final private FPSAnimator animator;
+        MouseListener, KeyListener, PreferenceChangeListener, UGSEventListener, IRendererInputHandler {
+    final private Renderer gcodeRenderer;
+    final private IAnimator animator;
     private final BackendAPI backend;
     private final GcodeModel gcodeModel;
     private final SizeDisplay sizeDisplay;
     private final Selection selection;
+    private final RenderableRegistrationService renderableRegistrationService;
     private Settings settings;
 
     private static final int HIGH_FPS = 15;
     private static final int LOW_FPS = 4;
 
-    public RendererInputHandler(GcodeRenderer gr, FPSAnimator a, BackendAPI backend) {
+    public DefualtRendererInputHandler(Renderer gr, IAnimator a, BackendAPI backend) {
         gcodeRenderer = gr;
         animator = a;
         this.backend = backend;
         animator.start();
         settings = backend.getSettings();
 
-        RotationService rs = new RotationService();
-        gcodeModel = new GcodeModel(Localization.getString("platform.visualizer.renderable.gcode-model"), rs);
+        gcodeModel = new GcodeModel(Localization.getString("platform.visualizer.renderable.gcode-model"));
         sizeDisplay = new SizeDisplay(Localization.getString("platform.visualizer.renderable.gcode-model-size"));
         selection = new Selection(Localization.getString("platform.visualizer.renderable.selection"));
         sizeDisplay.setUnits(settings.getPreferredUnits());
 
-        gr.registerRenderable(gcodeModel);
-        gr.registerRenderable(sizeDisplay);
-        gr.registerRenderable(selection);
+        renderableRegistrationService  = Lookup.getDefault().lookup(RenderableRegistrationService.class);
+        renderableRegistrationService.registerRenderable(gcodeModel);
+        renderableRegistrationService.registerRenderable(sizeDisplay);
+        renderableRegistrationService.registerRenderable(selection);
     }
     
     private void setFPS(int fps) {

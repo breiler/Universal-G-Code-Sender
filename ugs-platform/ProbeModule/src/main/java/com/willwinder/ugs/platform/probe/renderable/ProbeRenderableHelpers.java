@@ -18,9 +18,9 @@
  */
 package com.willwinder.ugs.platform.probe.renderable;
 
-import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.util.gl2.GLUT;
+import com.willwinder.ugs.nbm.visualizer.shared.GL;
 import com.willwinder.universalgcodesender.model.Position;
 
 /**
@@ -49,7 +49,7 @@ public class ProbeRenderableHelpers {
         }
     }
 
-    public static void drawTouchPlate(GL2 gl, GLUT glut, Position at, double inset, double size, Position offsets,
+    public static void drawTouchPlate(GL gl, GLUT glut, Position at, double inset, double size, Position offsets,
             double bumpThickness, double plateThickness, Side X, Side Y) {
         gl.glPushMatrix();
             gl.glTranslated(
@@ -74,7 +74,7 @@ public class ProbeRenderableHelpers {
             gl.glPopMatrix();
 
             gl.glColor4d(1, 1, 1, 1);
-            gl.glColorMaterial(GL.GL_FRONT_AND_BACK, GL2.GL_AMBIENT);
+            gl.glColorMaterial(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT);
 
             // big piece
             gl.glPushMatrix();
@@ -85,7 +85,7 @@ public class ProbeRenderableHelpers {
         gl.glPopMatrix();
     }
 
-    public static void drawArrow(GL2 gl, GLUT glut, Position from, Position to) {
+    public static void drawArrow(GL gl, GLUT glut, Position from, Position to) {
         double vx = to.x - from.x;
         double vy = to.y - from.y;
         double vz = to.z - from.z;

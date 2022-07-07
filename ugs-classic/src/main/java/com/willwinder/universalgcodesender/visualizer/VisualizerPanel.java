@@ -56,9 +56,9 @@ public class VisualizerPanel extends JPanel implements UGSEventListener {
         this.canvas = new VisualizerCanvas();
 
         // Create a animator that drives canvas' display() at the specified FPS.
-        FPSAnimator animator = new FPSAnimator(canvas, FPS, true);
+        //FPSAnimator animator = new FPSAnimator(canvas, FPS, true);
 
-        animator.start(); // start the animation loop
+       // animator.start(); // start the animation loop
 
         initComponents();
     }

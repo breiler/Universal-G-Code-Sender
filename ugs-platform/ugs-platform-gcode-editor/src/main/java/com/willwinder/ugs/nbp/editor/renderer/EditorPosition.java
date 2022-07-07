@@ -24,6 +24,8 @@ import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUquadric;
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions;
 import com.willwinder.ugs.nbm.visualizer.renderables.GcodeModel;
+import com.willwinder.ugs.nbm.visualizer.shared.GL;
+import com.willwinder.ugs.nbm.visualizer.shared.GLDrawable;
 import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.willwinder.universalgcodesender.model.Position;
 
@@ -35,7 +37,7 @@ import java.awt.Color;
  * @author Joacim Breiler
  */
 public class EditorPosition extends Renderable {
-    private static final GLU GLU = new GLU();
+    //private static final GLU GLU = new GLU();
     private static GLUquadric GQ;
     private final GcodeModel model;
     private Position position;
@@ -56,8 +58,8 @@ public class EditorPosition extends Renderable {
     }
 
     @Override
-    public void init(GLAutoDrawable drawable) {
-        GQ = GLU.gluNewQuadric();
+    public void init(GLDrawable drawable) {
+        //GQ = GLU.gluNewQuadric();
     }
 
     @Override
@@ -65,12 +67,12 @@ public class EditorPosition extends Renderable {
     }
 
     @Override
-    public void draw(GLAutoDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseCoordinates, Position rotation) {
+    public void draw(GLDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseCoordinates, Position rotation) {
         if (position == null || GQ == null) {
             return;
         }
 
-        GL2 gl = drawable.getGL().getGL2();
+        /*GL gl = drawable.getGL();
         double scale = 1. / (scaleFactor * 2);
         gl.glPushMatrix();
         gl.glTranslated(position.x, position.y, position.z);
@@ -81,7 +83,7 @@ public class EditorPosition extends Renderable {
         GLU.gluCylinder(GQ, 0f, .03f, .2, 16, 1);
         gl.glTranslated(0, 0, 0.2);
         GLU.gluCylinder(GQ, 0.03f, .0f, .01, 16, 1);
-        gl.glPopMatrix();
+        gl.glPopMatrix();*/
     }
 
     public void setLineNumber(int lineNumber) {

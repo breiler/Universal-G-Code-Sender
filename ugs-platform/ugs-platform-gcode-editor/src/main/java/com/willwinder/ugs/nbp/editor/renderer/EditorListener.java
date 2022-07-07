@@ -19,7 +19,7 @@
 package com.willwinder.ugs.nbp.editor.renderer;
 
 import com.willwinder.ugs.nbm.visualizer.renderables.GcodeModel;
-import com.willwinder.ugs.nbm.visualizer.shared.GcodeRenderer;
+import com.willwinder.ugs.nbm.visualizer.shared.RenderableRegistrationService;
 import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.willwinder.ugs.nbm.visualizer.shared.RenderableUtils;
 import com.willwinder.universalgcodesender.i18n.Localization;
@@ -59,7 +59,7 @@ public class EditorListener implements CaretListener {
     }
 
     public void reset() {
-        GcodeRenderer gcodeRenderer = Lookup.getDefault().lookup(GcodeRenderer.class);
+        RenderableRegistrationService gcodeRenderer = Lookup.getDefault().lookup(RenderableRegistrationService.class);
         GcodeModel gcodeModel = null;
         for (Renderable renderable : gcodeRenderer.getRenderables()) {
             if (renderable.getClass() == GcodeModel.class) {

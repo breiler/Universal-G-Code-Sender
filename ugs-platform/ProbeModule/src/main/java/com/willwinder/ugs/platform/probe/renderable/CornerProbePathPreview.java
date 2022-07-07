@@ -22,6 +22,8 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.util.gl2.GLUT;
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions;
+import com.willwinder.ugs.nbm.visualizer.shared.GL;
+import com.willwinder.ugs.nbm.visualizer.shared.GLDrawable;
 import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.willwinder.ugs.platform.probe.ProbeService.ProbeParameters;
 import com.willwinder.ugs.platform.probe.renderable.ProbeRenderableHelpers.Side;
@@ -77,7 +79,7 @@ public class CornerProbePathPreview extends Renderable {
     }
 
     @Override
-    public void init(GLAutoDrawable drawable) {
+    public void init(GLDrawable drawable) {
     }
 
     @Override
@@ -93,7 +95,7 @@ public class CornerProbePathPreview extends Renderable {
                 && this.thickness.z == 0;
     }
 
-    private void drawXY(GL2 gl, Side X, Side Y) {
+    private void drawXY(GL gl, Side X, Side Y) {
         double previewSize = Math.max(5, Math.max(thickness.x * 4, thickness.y * 4));
         double previewDepth = Math.min(thickness.x, thickness.y);
         double inset = 2.5;
@@ -127,7 +129,7 @@ public class CornerProbePathPreview extends Renderable {
                 new Position(spacing.x - inset, spacing.y, 0));
     }
 
-    private void drawXYZ(GL2 gl, Side X, Side Y) {
+    private void drawXYZ(GL gl, Side X, Side Y) {
         double previewSize = Math.max(5, Math.max(thickness.x * 4, thickness.y * 4));
         double previewDepth = thickness.z;
         double inset = 2.5;
@@ -176,10 +178,10 @@ public class CornerProbePathPreview extends Renderable {
     }
 
     @Override
-    public void draw(GLAutoDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position objectMin, Position objectMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation) {
+    public void draw(GLDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position objectMin, Position objectMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation) {
         if (invalidSettings()) return;
 
-        GL2 gl = drawable.getGL().getGL2();
+        GL gl = drawable.getGL();
 
         if (startWork != null && pc.endPosition == null) {
             // The WCS is reset at the start of these operations.

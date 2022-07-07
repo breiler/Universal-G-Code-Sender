@@ -18,11 +18,11 @@
  */
 package com.willwinder.ugs.nbm.visualizer;
 
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.awt.GLJPanel;
-import com.jogamp.opengl.util.FPSAnimator;
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptionsPanel;
-import com.willwinder.ugs.nbm.visualizer.shared.GcodeRenderer;
+import com.willwinder.ugs.nbm.visualizer.shared.IRendererInputHandler;
+import com.willwinder.ugs.nbm.visualizer.shared.Renderer;
+import com.willwinder.ugs.nbm.visualizer.shared.jogl.JOGLGcodeRenderer;
+import com.willwinder.ugs.nbm.visualizer.shared.lwjgl.LwjglRenderer;
 import com.willwinder.ugs.nbp.lib.lookup.CentralLookup;
 import com.willwinder.ugs.nbp.lib.services.LocalizingService;
 import com.willwinder.ugs.nbp.lib.services.TopComponentLocalizer;
@@ -63,8 +63,8 @@ import static com.willwinder.ugs.nbp.lib.services.LocalizingService.lang;
 public final class Visualizer2TopComponent extends TopComponent {
     private static final Logger logger = Logger.getLogger(Visualizer2TopComponent.class.getName());
 
-    private GLJPanel panel;
-    private RendererInputHandler rih;
+    private JComponent panel;
+    private IRendererInputHandler rih;
     private final BackendAPI backend;
 
     public final static String VisualizerTitle = Localization.getString("platform.window.visualizer", lang);
@@ -72,6 +72,7 @@ public final class Visualizer2TopComponent extends TopComponent {
     public final static String VisualizerWindowPath = LocalizingService.MENU_WINDOW;
     public final static String VisualizerActionId = "com.willwinder.ugs.nbm.visualizer.Visualizer2TopComponent";
     public final static String VisualizerCategory = LocalizingService.CATEGORY_WINDOW;
+    private Renderer renderer;
 
     @OnStart
     public static class Localizer extends TopComponentLocalizer {
@@ -108,8 +109,8 @@ public final class Visualizer2TopComponent extends TopComponent {
         super.componentOpened();
 
         removeAll();
-        add(new VisualizerToolBar(), BorderLayout.NORTH);
         panel = makeWindow();
+        add(new VisualizerToolBar(), BorderLayout.NORTH);
 
         JPanel borderedPanel = new JPanel();
         borderedPanel.setLayout(new BorderLayout());
@@ -131,7 +132,7 @@ public final class Visualizer2TopComponent extends TopComponent {
 
         remove(panel);
         //dispose of panel and native resources
-        panel.destroy();
+        renderer.destroy();
         panel = null;
     }
 
@@ -150,17 +151,14 @@ public final class Visualizer2TopComponent extends TopComponent {
         }
     }
     
-    private GLJPanel makeWindow() {
-        GLCapabilities glCaps = new GLCapabilities(null);
-        final GLJPanel p = new GLJPanel(glCaps);
-
-        GcodeRenderer renderer = Lookup.getDefault().lookup(GcodeRenderer.class);
+    private JComponent makeWindow() {
+        renderer = Lookup.getDefault().lookup(LwjglRenderer.class);
         if (renderer == null) {
             throw new IllegalArgumentException("Failed to access GcodeRenderer.");
         }
 
-        FPSAnimator animator = new FPSAnimator(p, 15);
-        this.rih = new RendererInputHandler(renderer, animator, backend);
+
+        this.rih = renderer.getRendererInputHandler();
 
         Preferences pref = NbPreferences.forModule(VisualizerOptionsPanel.class);
         pref.addPreferenceChangeListener(this.rih);
@@ -174,20 +172,6 @@ public final class Visualizer2TopComponent extends TopComponent {
         // Install listeners...
         backend.addUGSEventListener(this.rih);
 
-        // key listener...
-        p.addKeyListener(this.rih);
-
-        // mouse wheel...
-        p.addMouseWheelListener(this.rih);
-
-        // mouse motion...
-        p.addMouseMotionListener(this.rih);
-
-        // mouse...
-        p.addMouseListener(this.rih);
-
-        p.addGLEventListener(renderer);
-
-        return p;
+        return renderer.getPanel();
     }
 }

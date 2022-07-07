@@ -29,6 +29,8 @@ import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUquadric;
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions;
+import com.willwinder.ugs.nbm.visualizer.shared.GL;
+import com.willwinder.ugs.nbm.visualizer.shared.GLDrawable;
 import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.willwinder.universalgcodesender.model.Position;
 import java.awt.Color;
@@ -59,8 +61,8 @@ public class MouseOver extends Renderable {
     }
 
     @Override
-    public void init(GLAutoDrawable drawable) {
-        GQ = GLU.gluNewQuadric();
+    public void init(GLDrawable drawable) {
+        //GQ = GLU.gluNewQuadric();
     }
 
     @Override
@@ -74,11 +76,11 @@ public class MouseOver extends Renderable {
     }
 
     @Override
-    public void draw(GLAutoDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position objectMin, Position objectMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation) {
+    public void draw(GLDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position objectMin, Position objectMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation) {
         if (mouseWorldCoordinates == null) return;
 
         if (inBounds(mouseWorldCoordinates, objectMin, objectMax)) {
-            GL2 gl = drawable.getGL().getGL2();
+            GL gl = drawable.getGL();
 
             double scale = 1. / (scaleFactor * 2);
 
@@ -87,10 +89,10 @@ public class MouseOver extends Renderable {
                 gl.glScaled(scale, scale, scale);
 
                 gl.glColor4fv(VisualizerOptions.colorToFloatArray(Color.WHITE), 0);
-                GLU.gluQuadricNormals(GQ, GLU.GLU_SMOOTH);
-                GLU.gluCylinder(GQ, 0f, .03f, .2, 16, 1);
+                //GLU.gluQuadricNormals(GQ, GLU.GLU_SMOOTH);
+                //GLU.gluCylinder(GQ, 0f, .03f, .2, 16, 1);
                 gl.glTranslated(0, 0, 0.2);
-                GLU.gluCylinder(GQ, 0.03f, .0f, .01, 16, 1);
+                //GLU.gluCylinder(GQ, 0.03f, .0f, .01, 16, 1);
             gl.glPopMatrix();
         }
     }

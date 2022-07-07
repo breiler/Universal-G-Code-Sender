@@ -22,6 +22,8 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.util.gl2.GLUT;
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions;
+import com.willwinder.ugs.nbm.visualizer.shared.GL;
+import com.willwinder.ugs.nbm.visualizer.shared.GLDrawable;
 import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.willwinder.universalgcodesender.model.Position;
 
@@ -61,7 +63,7 @@ public class ZProbePathPreview extends Renderable {
     }
 
     @Override
-    public void init(GLAutoDrawable drawable) {
+    public void init(GLDrawable drawable) {
     }
 
     @Override
@@ -69,7 +71,7 @@ public class ZProbePathPreview extends Renderable {
     }
 
     @Override
-    public void draw(GLAutoDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position objectMin, Position objectMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation) {
+    public void draw(GLDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position objectMin, Position objectMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation) {
         if (this.probeDepth == null || this.probeOffset == null) return;
         final int slices = 10;
         final int stacks = 10;
@@ -77,7 +79,7 @@ public class ZProbePathPreview extends Renderable {
         int rot = (this.probeDepth > 0) ? 0 : 180;
         double zAbs = Math.abs(this.probeDepth);
 
-        GL2 gl = drawable.getGL().getGL2();
+        GL gl = drawable.getGL();
 
         if (this.start != null) {
             gl.glTranslated(start.x, start.y, start.z);

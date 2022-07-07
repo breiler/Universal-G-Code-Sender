@@ -24,7 +24,7 @@ import java.util.Collection;
  *
  * @author wwinder
  */
-public interface IRenderableRegistrationService {
+public interface RenderableRegistrationService {
     Collection<Renderable> getRenderables();
     void registerRenderable(Renderable r);
     void removeRenderable(Renderable r);

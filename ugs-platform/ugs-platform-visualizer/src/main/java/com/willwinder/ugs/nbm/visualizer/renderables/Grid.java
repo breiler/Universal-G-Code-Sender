@@ -18,18 +18,20 @@
  */
 package com.willwinder.ugs.nbm.visualizer.renderables;
 
-import static com.jogamp.opengl.GL.GL_LINES;
-import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GLAutoDrawable;
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions;
+import com.willwinder.ugs.nbm.visualizer.shared.GL;
+import com.willwinder.ugs.nbm.visualizer.shared.GLDrawable;
+import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
+import com.willwinder.universalgcodesender.model.Position;
+import com.willwinder.universalgcodesender.visualizer.VisualizerUtils;
+import org.lwjgl.opengl.GL11;
+
+import static com.jogamp.opengl.GL.GL_LINES;
 import static com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions.VISUALIZER_OPTION_X;
 import static com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions.VISUALIZER_OPTION_XY_GRID;
 import static com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions.VISUALIZER_OPTION_XY_PLANE;
 import static com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions.VISUALIZER_OPTION_Y;
 import static com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions.VISUALIZER_OPTION_Z;
-import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
-import com.willwinder.universalgcodesender.model.Position;
-import com.willwinder.universalgcodesender.visualizer.VisualizerUtils;
 
 /**
  *
@@ -72,7 +74,7 @@ public class Grid extends Renderable {
     }
 
     @Override
-    public void init(GLAutoDrawable drawable) {
+    public void init(GLDrawable drawable) {
     }
 
     private double getBestStepSize(double maxSide) {
@@ -105,12 +107,11 @@ public class Grid extends Renderable {
     }
 
     @Override
-    public void draw(GLAutoDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseCoordinates, Position rotation) {
+    public void draw(GLDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseCoordinates, Position rotation) {
         double maxSide = VisualizerUtils.findMaxSide(focusMin, focusMax);
         if (maxSide == 0) {
             maxSide = 1;
         }
-        double buffer = maxSide * 0.05;
         Position bottomLeft = new Position(focusMin);
         Position topRight = new Position(focusMax);
 
@@ -121,7 +122,7 @@ public class Grid extends Renderable {
         topRight.x = getDistFromZeroForStepSize(stepSize, topRight.x, false);
         topRight.y = getDistFromZeroForStepSize(stepSize, topRight.y, false);
 
-        GL2 gl = drawable.getGL().getGL2();
+        GL gl = drawable.getGL();
         gl.glPushMatrix();
             double offset = 0.001;
 
@@ -130,7 +131,7 @@ public class Grid extends Renderable {
             gl.glBegin(GL_LINES);
             for(double x=bottomLeft.x;x<=topRight.x;x+=stepSize) {
                 for (double y=bottomLeft.y; y<=topRight.y; y+=stepSize) {
-                    if (x==0) continue; 
+                    if (x==0) continue;
                     gl.glColor4fv(gridLineColor, 0);
 
                     gl.glVertex3d(x, bottomLeft.y, offset);
@@ -174,11 +175,10 @@ public class Grid extends Renderable {
                 gl.glVertex3d(0, 0, Math.max(topRight.z, -bottomLeft.z));
             gl.glEnd();
 
-            //gl.glColor4f(.3f,.3f,.3f, .09f);
             gl.glColor4fv(gridPlaneColor, 0);
 
             // floor - cover entire model and a little extra.
-            gl.glBegin(GL2.GL_QUADS);
+            gl.glBegin(GL11.GL_QUADS);
                 gl.glVertex3d(bottomLeft.x, bottomLeft.y, 0);
                 gl.glVertex3d(bottomLeft.x, topRight.y  , 0);
                 gl.glVertex3d(topRight.x  , topRight.y  , 0);

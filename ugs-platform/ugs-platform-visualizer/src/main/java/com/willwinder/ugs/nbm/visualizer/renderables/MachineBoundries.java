@@ -19,13 +19,19 @@
 package com.willwinder.ugs.nbm.visualizer.renderables;
 
 import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GLAutoDrawable;
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions;
+import com.willwinder.ugs.nbm.visualizer.shared.GL;
+import com.willwinder.ugs.nbm.visualizer.shared.GLDrawable;
 import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.willwinder.ugs.nbp.lib.lookup.CentralLookup;
 import com.willwinder.universalgcodesender.firmware.FirmwareSettingsException;
 import com.willwinder.universalgcodesender.firmware.IFirmwareSettings;
-import com.willwinder.universalgcodesender.model.*;
+import com.willwinder.universalgcodesender.model.Axis;
+import com.willwinder.universalgcodesender.model.BackendAPI;
+import com.willwinder.universalgcodesender.model.PartialPosition;
+import com.willwinder.universalgcodesender.model.Position;
+import com.willwinder.universalgcodesender.model.UGSEvent;
+import com.willwinder.universalgcodesender.model.UnitUtils;
 import com.willwinder.universalgcodesender.model.events.FirmwareSettingEvent;
 
 import static com.jogamp.opengl.GL.GL_LINES;
@@ -104,13 +110,12 @@ public class MachineBoundries extends Renderable {
     }
 
     @Override
-    public boolean enableLighting() {
-        return false;
+    public void init(GLDrawable drawable) {
     }
 
     @Override
-    public void init(GLAutoDrawable drawable) {
-        // Not used
+    public boolean enableLighting() {
+        return false;
     }
 
     @Override
@@ -123,7 +128,7 @@ public class MachineBoundries extends Renderable {
     }
 
     @Override
-    public void draw(GLAutoDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation) {
+    public void draw(GLDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation) {
         if (!softLimitsEnabled) {
             return;
         }
@@ -135,7 +140,7 @@ public class MachineBoundries extends Renderable {
         Position bottomLeft = new Position(-maxPosition.getX() + xOffset, -maxPosition.getY() + yOffset, -maxPosition.getZ() + zOffset);
         Position topRight = new Position(xOffset, yOffset, zOffset);
 
-        GL2 gl = drawable.getGL().getGL2();
+        GL gl = drawable.getGL();
         gl.glPushMatrix();
             drawBase(gl, bottomLeft, topRight);
             drawSides(gl, bottomLeft, topRight);
@@ -143,7 +148,7 @@ public class MachineBoundries extends Renderable {
         gl.glPopMatrix();
     }
 
-    private void drawBase(GL2 gl, Position bottomLeft, Position topRight) {
+    private void drawBase(GL gl, Position bottomLeft, Position topRight) {
         double bottomZ = Math.min(bottomLeft.getZ(), topRight.getZ());
         gl.glColor4fv(machineBoundryBottomColor, 0);
         gl.glBegin(GL2.GL_QUADS);
@@ -154,7 +159,7 @@ public class MachineBoundries extends Renderable {
         gl.glEnd();
     }
 
-    private void drawAxisLines(GL2 gl, Position bottomLeft, Position topRight) {
+    private void drawAxisLines(GL gl, Position bottomLeft, Position topRight) {
         double offset = 0.001;
         gl.glLineWidth(5f);
         gl.glBegin(GL_LINES);
@@ -181,7 +186,7 @@ public class MachineBoundries extends Renderable {
         gl.glEnd();
     }
 
-    private void drawSides(GL2 gl, Position bottomLeft, Position topRight) {
+    private void drawSides(GL gl, Position bottomLeft, Position topRight) {
         double offset = 0.001;
         gl.glLineWidth(3f);
         gl.glBegin(GL_LINES);

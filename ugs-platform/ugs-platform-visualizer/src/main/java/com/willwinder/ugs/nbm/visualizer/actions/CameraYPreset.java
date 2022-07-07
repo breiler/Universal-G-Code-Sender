@@ -19,7 +19,8 @@
 package com.willwinder.ugs.nbm.visualizer.actions;
 
 
-import com.willwinder.ugs.nbm.visualizer.shared.GcodeRenderer;
+import com.willwinder.ugs.nbm.visualizer.shared.Renderer;
+import com.willwinder.ugs.nbm.visualizer.shared.jogl.JOGLGcodeRenderer;
 import com.willwinder.ugs.nbp.lib.services.LocalizingService;
 import com.willwinder.ugs.nbp.lib.services.TopComponentLocalizer;
 import com.willwinder.universalgcodesender.i18n.Localization;
@@ -63,7 +64,7 @@ public final class CameraYPreset extends MoveCameraAction {
 
     public CameraYPreset() {
         super(
-                Lookup.getDefault().lookup(GcodeRenderer.class),
+                Lookup.getDefault().lookup(Renderer.class),
                 ROTATION_FRONT);
 
         putValue("iconBase", SMALL_ICON_PATH);

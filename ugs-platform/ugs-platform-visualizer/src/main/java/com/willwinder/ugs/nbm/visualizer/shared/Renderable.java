@@ -18,9 +18,9 @@
  */
 package com.willwinder.ugs.nbm.visualizer.shared;
 
-import com.jogamp.opengl.GLAutoDrawable;
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions;
 import com.willwinder.universalgcodesender.model.Position;
+
 import java.util.Objects;
 
 /**
@@ -92,7 +92,7 @@ public abstract class Renderable implements Comparable<Renderable> {
      */
     abstract public boolean center();
 
-    abstract public void init(GLAutoDrawable drawable);
+    abstract public void init(GLDrawable drawable);
     abstract public void reloadPreferences(VisualizerOptions vo);
-    abstract public void draw(GLAutoDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position objectMin, Position objectMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation);
+    abstract public void draw(GLDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position objectMin, Position objectMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation);
 }

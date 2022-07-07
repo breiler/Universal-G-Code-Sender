@@ -18,18 +18,18 @@
  */
 package com.willwinder.ugs.nbp.editor.renderer;
 
-import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL2ES3;
-import com.jogamp.opengl.GLAutoDrawable;
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions;
 import com.willwinder.ugs.nbm.visualizer.renderables.GcodeModel;
+import com.willwinder.ugs.nbm.visualizer.shared.GL;
+import com.willwinder.ugs.nbm.visualizer.shared.GLDrawable;
 import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.willwinder.universalgcodesender.gcode.util.Plane;
 import com.willwinder.universalgcodesender.gcode.util.PlaneFormatter;
 import com.willwinder.universalgcodesender.model.CNCPoint;
 import com.willwinder.universalgcodesender.model.Position;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -85,12 +85,12 @@ public class Highlight extends Renderable {
     }
 
     @Override
-    public void init(GLAutoDrawable drawable) {
+    public void init(GLDrawable drawable) {
         // Not used
     }
 
     @Override
-    public void draw(GLAutoDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseCoordinates, Position rotation) {
+    public void draw(GLDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position focusMin, Position focusMax, double scaleFactor, Position mouseCoordinates, Position rotation) {
         if (points.isEmpty() && startLine > 0 && endLine > 0) {
             return;
         }
@@ -102,7 +102,7 @@ public class Highlight extends Renderable {
         }
 
         float[] c = VisualizerOptions.colorToFloatArray(highlightColor);
-        GL2 gl = drawable.getGL().getGL2();
+        GL gl = drawable.getGL();
         gl.glBegin(GL2ES3.GL_QUADS);
             gl.glColor4fv(c, 0);
             points.forEach(point -> gl.glVertex3d(point.x, point.y, point.z));

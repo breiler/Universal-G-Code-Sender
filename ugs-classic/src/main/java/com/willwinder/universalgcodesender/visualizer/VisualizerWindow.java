@@ -69,7 +69,7 @@ public class VisualizerWindow extends JFrame implements UGSEventListener, Window
         canvas.setLocation(ws.xLocation, ws.yLocation);
 
         // Create a animator that drives canvas' display() at the specified FPS.
-        this.animator = new FPSAnimator(canvas, FPS, true);
+        //this.animator = new FPSAnimator(canvas, FPS, true);
 
         // Create the top-level container
         final JFrame frame = this; // Swing's JFrame or AWT's Frame
@@ -81,7 +81,7 @@ public class VisualizerWindow extends JFrame implements UGSEventListener, Window
         frame.setTitle(TITLE);
         frame.pack();
         frame.setVisible(true);
-        animator.start(); // start the animation loop
+        //animator.start(); // start the animation loop
     }                                
 
     public void setGcodeFile(String file) {
@@ -127,21 +127,12 @@ public class VisualizerWindow extends JFrame implements UGSEventListener, Window
 
     @Override
     public void windowClosing(WindowEvent e) {
-        // Use a dedicate thread to run the stop() to ensure that the
-        // animator stops before program exits.
-        new Thread() {
-            @Override
-            public void run() {
-                if (animator.isStarted()){ animator.pause(); }
-            }
-        }.start();
+
     }
 
     @Override
     public void windowActivated(WindowEvent e) {
-        if (animator.isPaused()) { animator.resume(); }
     }
-        
 
     @Override
     public void windowOpened(WindowEvent we) {

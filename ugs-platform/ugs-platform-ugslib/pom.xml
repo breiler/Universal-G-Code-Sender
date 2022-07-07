@@ -108,6 +108,9 @@
                         <package>com.jogamp.opengl.util.texture.awt</package>
                         <package>com.jogamp.opengl.util.texture.spi</package>
                         <package>com.jogamp.opengl.util.texture.spi.awt</package>
+                        <package>org.lwjgl</package>
+                        <package>org.lwjgl.opengl</package>
+                        <package>org.lwjgl.opengl.awt</package>
                         <package>com.willwinder.universalgcodesender</package>
                         <package>com.willwinder.universalgcodesender.CLI</package>
                         <package>com.willwinder.universalgcodesender.connection</package>

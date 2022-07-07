@@ -25,12 +25,12 @@ import org.openide.util.Lookup;
  * @author wwinder
  */
 public class RenderableUtils {
-    private static IRenderableRegistrationService renderableRegistrationService = null;
+    private static RenderableRegistrationService renderableRegistrationService = null;
 
     private static void resolveRegistrationService() {
         if (renderableRegistrationService == null) {
             renderableRegistrationService =
-                    Lookup.getDefault().lookup(IRenderableRegistrationService.class);
+                    Lookup.getDefault().lookup(RenderableRegistrationService.class);
         }
     }
 

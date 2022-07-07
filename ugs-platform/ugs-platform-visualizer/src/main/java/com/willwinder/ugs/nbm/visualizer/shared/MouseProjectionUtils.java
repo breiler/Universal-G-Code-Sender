@@ -19,14 +19,13 @@
     You should have received a copy of the GNU General Public License
     along with UGS.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.willwinder.universalgcodesender.visualizer;
+package com.willwinder.ugs.nbm.visualizer.shared;
 
-import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.glu.GLU;
 import com.willwinder.universalgcodesender.model.Position;
-import java.util.logging.Level;
+
 import java.util.logging.Logger;
 
 /**
@@ -43,9 +42,9 @@ public class MouseProjectionUtils {
      * 
      * Utilize gluUnProject to get the points.
      */
-    private static Vector3[] getRayFromMouse(GLAutoDrawable drawable, int mouseX, int mouseY) {
+    private static Vector3[] getRayFromMouse(GLDrawable drawable, int mouseX, int mouseY) {
 
-        GL2 gl2 = drawable.getGL().getGL2();
+        GL gl2 = drawable.getGL();
 
         int[] viewPort = new int[4];
         double[] modelViewMatrix = new double[16];
@@ -53,7 +52,7 @@ public class MouseProjectionUtils {
         double wcoordNear[] = new double[4];
         double wcoordFar[] = new double[4];
 
-        gl2.glGetIntegerv(GL.GL_VIEWPORT, viewPort, 0);
+        gl2.glGetIntegerv(GL2.GL_VIEWPORT, viewPort, 0);
         gl2.glGetDoublev( GL2.GL_MODELVIEW_MATRIX, modelViewMatrix, 0);
         gl2.glGetDoublev( GL2.GL_PROJECTION_MATRIX, projectionMatrix, 0);
 
@@ -86,13 +85,13 @@ public class MouseProjectionUtils {
                 new Vector3(wcoordFar[0], wcoordFar[1], wcoordFar[2])};
     }
 
-    public static Position intersectPointWithXYPlane(GLAutoDrawable drawable,
-            int rawMouseX, int rawMouseY) {
+    public static Position intersectPointWithXYPlane(GLDrawable drawable,
+                                                     int rawMouseX, int rawMouseY) {
 
         int[] raw = {rawMouseX, rawMouseY};
-        int[] coords = drawable.getNativeSurface().convertToPixelUnits(raw);
-        int mouseX = coords[0];
-        int mouseY = coords[1];
+        int[] coords = drawable.convertToPixelUnits(raw);
+        int mouseX = rawMouseX;
+        int mouseY = rawMouseY;
 
         Vector3[] mouseRay = getRayFromMouse(drawable, mouseX, mouseY);
 

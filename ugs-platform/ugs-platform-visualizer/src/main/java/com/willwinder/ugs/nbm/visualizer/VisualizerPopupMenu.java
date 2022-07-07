@@ -22,7 +22,7 @@ import com.willwinder.ugs.nbm.visualizer.actions.CameraResetPreset;
 import com.willwinder.ugs.nbm.visualizer.actions.CameraXPreset;
 import com.willwinder.ugs.nbm.visualizer.actions.CameraYPreset;
 import com.willwinder.ugs.nbm.visualizer.actions.CameraZPreset;
-import com.willwinder.ugs.nbm.visualizer.shared.IRenderableRegistrationService;
+import com.willwinder.ugs.nbm.visualizer.shared.RenderableRegistrationService;
 import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.willwinder.ugs.nbm.visualizer.shared.RenderableCheckBox;
 import com.willwinder.universalgcodesender.i18n.Localization;
@@ -72,8 +72,8 @@ public class VisualizerPopupMenu extends JPopupMenu {
     }
 
     private void createShowRenderablesSubmenu() {
-        IRenderableRegistrationService renderableService =
-                Lookup.getDefault().lookup(IRenderableRegistrationService.class);
+        RenderableRegistrationService renderableService =
+                Lookup.getDefault().lookup(RenderableRegistrationService.class);
         Collection<Renderable> renderables = renderableService.getRenderables();
 
         JMenu menu = new JMenu(Localization.getString("platform.visualizer.popup.showFeatures"));

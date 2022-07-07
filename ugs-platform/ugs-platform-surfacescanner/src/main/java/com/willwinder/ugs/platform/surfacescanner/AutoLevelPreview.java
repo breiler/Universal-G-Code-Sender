@@ -24,6 +24,8 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.util.gl2.GLUT;
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions;
+import com.willwinder.ugs.nbm.visualizer.shared.GL;
+import com.willwinder.ugs.nbm.visualizer.shared.GLDrawable;
 import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.willwinder.universalgcodesender.model.Position;
 import com.willwinder.universalgcodesender.model.UnitUtils;
@@ -64,7 +66,7 @@ public class AutoLevelPreview extends Renderable {
     }
 
     @Override
-    public void init(GLAutoDrawable drawable) {
+    public void init(GLDrawable drawable) {
     }
 
     @Override
@@ -92,7 +94,7 @@ public class AutoLevelPreview extends Renderable {
     }
 
     @Override
-    public void draw(GLAutoDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position objectMin, Position objectMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation) {
+    public void draw(GLDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position objectMin, Position objectMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation) {
 
         // Don't draw something invalid.
         if (positions == null || positions.isEmpty()) {
@@ -113,7 +115,7 @@ public class AutoLevelPreview extends Renderable {
         miny = maxy = first.y;
         minz = maxz = first.z;
         
-        GL2 gl = drawable.getGL().getGL2();
+        GL gl = drawable.getGL();
         gl.glPushMatrix();
             // Scale inch to mm if needed
             double scale = UnitUtils.scaleUnits(unit, Units.MM);
@@ -153,7 +155,7 @@ public class AutoLevelPreview extends Renderable {
         gl.glPopMatrix();
     }
 
-    private void setColorForZ(GL2 gl, double zPos) {
+    private void setColorForZ(GL gl, double zPos) {
         float ratio = (float) ((zPos - minZ) / (maxZ - minZ));
         float r = ratio * high[0] + (1-ratio) * low[0];
         float g = ratio * high[1] + (1-ratio) * low[1];
@@ -163,7 +165,7 @@ public class AutoLevelPreview extends Renderable {
         gl.glColor4f(r, g, b, a);
     }
 
-    private void drawProbedSurface(GL2 gl) {
+    private void drawProbedSurface(GL gl) {
         if (this.grid == null) {
             return;
         }

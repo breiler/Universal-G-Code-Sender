@@ -18,10 +18,11 @@
  */
 package com.willwinder.ugs.nbm.visualizer.renderables;
 
-import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GLAutoDrawable;
 import com.willwinder.ugs.nbm.visualizer.options.VisualizerOptions;
+import com.willwinder.ugs.nbm.visualizer.shared.GL;
+import com.willwinder.ugs.nbm.visualizer.shared.GLDrawable;
+import com.willwinder.ugs.nbm.visualizer.shared.Renderable;
 import com.willwinder.universalgcodesender.model.Position;
 
 /**
@@ -60,7 +61,7 @@ public class Selection extends Renderable {
     }
 
     @Override
-    public void init(GLAutoDrawable drawable) {
+    public void init(GLDrawable drawable) {
     }
 
     @Override
@@ -68,10 +69,10 @@ public class Selection extends Renderable {
     }
 
     @Override
-    public void draw(GLAutoDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position objectMin, Position objectMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation) {
+    public void draw(GLDrawable drawable, boolean idle, Position machineCoord, Position workCoord, Position objectMin, Position objectMax, double scaleFactor, Position mouseWorldCoordinates, Position rotation) {
         if (start == null || end == null) return;
 
-        GL2 gl = drawable.getGL().getGL2();
+        GL gl = drawable.getGL();
 
         gl.glColor4f(.3f,.3f,.3f, .09f);
         //gl.glColor4fv(gridPlaneColor, 0);
