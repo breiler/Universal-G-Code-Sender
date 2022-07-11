@@ -28,14 +28,26 @@ import com.willwinder.universalgcodesender.model.BackendAPI;
 import com.willwinder.universalgcodesender.model.Position;
 import com.willwinder.universalgcodesender.model.UGSEvent;
 import com.willwinder.universalgcodesender.model.UnitUtils.Units;
-import com.willwinder.universalgcodesender.model.events.*;
+import com.willwinder.universalgcodesender.model.events.CommandEvent;
+import com.willwinder.universalgcodesender.model.events.CommandEventType;
+import com.willwinder.universalgcodesender.model.events.ControllerStatusEvent;
+import com.willwinder.universalgcodesender.model.events.FileStateEvent;
+import com.willwinder.universalgcodesender.model.events.SettingChangedEvent;
 import com.willwinder.universalgcodesender.utils.Settings;
 import com.willwinder.universalgcodesender.utils.Settings.FileStats;
 import org.openide.util.Lookup;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.SwingUtilities;
+import java.awt.Point;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.awt.event.WindowListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 
@@ -47,6 +59,8 @@ import java.util.prefs.PreferenceChangeListener;
 public class DefualtRendererInputHandler implements
         WindowListener, MouseWheelListener, MouseMotionListener,
         MouseListener, KeyListener, PreferenceChangeListener, UGSEventListener, IRendererInputHandler {
+    private static final int HIGH_FPS = 15;
+    private static final int LOW_FPS = 4;
     final private Renderer gcodeRenderer;
     final private IAnimator animator;
     private final BackendAPI backend;
@@ -55,9 +69,9 @@ public class DefualtRendererInputHandler implements
     private final Selection selection;
     private final RenderableRegistrationService renderableRegistrationService;
     private Settings settings;
-
-    private static final int HIGH_FPS = 15;
-    private static final int LOW_FPS = 4;
+    private boolean selecting = false;
+    private Position selectionStart = null;
+    private Position selectionEnd = null;
 
     public DefualtRendererInputHandler(Renderer gr, IAnimator a, BackendAPI backend) {
         gcodeRenderer = gr;
@@ -71,12 +85,12 @@ public class DefualtRendererInputHandler implements
         selection = new Selection(Localization.getString("platform.visualizer.renderable.selection"));
         sizeDisplay.setUnits(settings.getPreferredUnits());
 
-        renderableRegistrationService  = Lookup.getDefault().lookup(RenderableRegistrationService.class);
+        renderableRegistrationService = Lookup.getDefault().lookup(RenderableRegistrationService.class);
         renderableRegistrationService.registerRenderable(gcodeModel);
         renderableRegistrationService.registerRenderable(sizeDisplay);
         renderableRegistrationService.registerRenderable(selection);
     }
-    
+
     private void setFPS(int fps) {
         animator.stop();
         animator.setFPS(fps);
@@ -87,12 +101,14 @@ public class DefualtRendererInputHandler implements
     public void preferenceChange(PreferenceChangeEvent evt) {
         gcodeRenderer.reloadPreferences();
     }
- 
+
     public void setGcodeFile(String file) {
+
         gcodeModel.setGcodeFile(file);
         gcodeRenderer.setObjectSize(gcodeModel.getMin(), gcodeModel.getMax());
 
         updateBounds(gcodeModel.getMin(), gcodeModel.getMax());
+        gcodeRenderer.revalidate();
     }
 
     /**
@@ -111,31 +127,34 @@ public class DefualtRendererInputHandler implements
      */
     @Override
     public void UGSEvent(UGSEvent cse) {
-        if (cse instanceof FileStateEvent) {
-            animator.pause();
-            FileStateEvent fileStateEvent = (FileStateEvent) cse;
-            switch (fileStateEvent.getFileState()) {
-                case FILE_LOADED:
-                    setGcodeFile(fileStateEvent.getFile());
-                    break;
-                case FILE_STREAM_COMPLETE:
-                    gcodeModel.setCurrentCommandNumber(0);
-                    break;
-            }
+        SwingUtilities.invokeLater(() -> {
 
-            animator.resume();
-        } else if (cse instanceof SettingChangedEvent) {
-            sizeDisplay.setUnits(settings.getPreferredUnits());
-        } else if (cse instanceof ControllerStatusEvent) {
-            ControllerStatusEvent controllerStatusEvent = (ControllerStatusEvent) cse;
-            gcodeRenderer.setMachineCoordinate(controllerStatusEvent.getStatus().getMachineCoord());
-            gcodeRenderer.setWorkCoordinate(controllerStatusEvent.getStatus().getWorkCoord());
-        } else if (cse instanceof CommandEvent) {
-            CommandEvent commandEvent = (CommandEvent) cse;
-            if (commandEvent.getCommandEventType() == CommandEventType.COMMAND_COMPLETE && !commandEvent.getCommand().isGenerated()) {
-                gcodeModel.setCurrentCommandNumber(commandEvent.getCommand().getCommandNumber());
+            if (cse instanceof FileStateEvent) {
+                animator.pause();
+                FileStateEvent fileStateEvent = (FileStateEvent) cse;
+                switch (fileStateEvent.getFileState()) {
+                    case FILE_LOADED:
+                        setGcodeFile(fileStateEvent.getFile());
+                        break;
+                    case FILE_STREAM_COMPLETE:
+                        gcodeModel.setCurrentCommandNumber(0);
+                        break;
+                }
+
+                animator.resume();
+            } else if (cse instanceof SettingChangedEvent) {
+                sizeDisplay.setUnits(settings.getPreferredUnits());
+            } else if (cse instanceof ControllerStatusEvent) {
+                ControllerStatusEvent controllerStatusEvent = (ControllerStatusEvent) cse;
+                gcodeRenderer.setMachineCoordinate(controllerStatusEvent.getStatus().getMachineCoord());
+                gcodeRenderer.setWorkCoordinate(controllerStatusEvent.getStatus().getWorkCoord());
+            } else if (cse instanceof CommandEvent) {
+                CommandEvent commandEvent = (CommandEvent) cse;
+                if (commandEvent.getCommandEventType() == CommandEventType.COMMAND_COMPLETE && !commandEvent.getCommand().isGenerated()) {
+                    gcodeModel.setCurrentCommandNumber(commandEvent.getCommand().getCommandNumber());
+                }
             }
-        }
+        });
     }
 
     /**
@@ -145,7 +164,7 @@ public class DefualtRendererInputHandler implements
     @Override
     public void mouseDragged(java.awt.event.MouseEvent e) {
         // Don't rotate if we're making a selection.
-        if (selecting){
+        if (selecting) {
             gcodeRenderer.mouseMoved(new Point(e.getX(), e.getY()));
             selection.setEnd(gcodeRenderer.getMouseWorldLocation());
             return;
@@ -155,13 +174,13 @@ public class DefualtRendererInputHandler implements
         if (SwingUtilities.isLeftMouseButton(e)) {
             int x = e.getX();
             int y = e.getY();
-            
+
             int panMouseButton = InputEvent.BUTTON2_MASK; // TODO: Make configurable
 
             if (e.isShiftDown() || e.getModifiers() == panMouseButton) {
-                gcodeRenderer.mousePan(new Point(x,y));
+                gcodeRenderer.mousePan(new Point(x, y));
             } else {
-                gcodeRenderer.mouseRotate(new Point(x,y));
+                gcodeRenderer.mouseRotate(new Point(x, y));
             }
         }
     }
@@ -178,7 +197,7 @@ public class DefualtRendererInputHandler implements
     public void mouseWheelMoved(MouseWheelEvent e) {
         gcodeRenderer.zoom(e.getWheelRotation());
     }
-    
+
     /**
      * Window Listener
      */
@@ -188,12 +207,12 @@ public class DefualtRendererInputHandler implements
         // Run this on another thread than the AWT event queue to
         // make sure the call to Animator.stop() completes before
         // exiting
-        new Thread(animator::stop).start();
+        animator.stop();
     }
 
     @Override
     public void windowOpened(java.awt.event.WindowEvent e) {
-        new Thread(animator::start).start();
+        animator.start();
     }
 
     @Override
@@ -235,10 +254,6 @@ public class DefualtRendererInputHandler implements
         }
     }
 
-    private boolean selecting = false;
-    private Position selectionStart = null;
-    private Position selectionEnd = null;
-
     /**
      * Mouse pressed is called on mouse-down.
      * Mouse released and mouse clicked are called on mouse-up.
@@ -279,7 +294,7 @@ public class DefualtRendererInputHandler implements
      * Key Listener
      */
 
-     /**
+    /**
      * KeyListener method.
      */
     @Override
@@ -294,8 +309,8 @@ public class DefualtRendererInputHandler implements
         setFPS(HIGH_FPS);
 
         int DELTA_SIZE = 1;
-            
-        switch(ke.getKeyCode()) {
+
+        switch (ke.getKeyCode()) {
             case KeyEvent.VK_UP:
                 gcodeRenderer.pan(0, DELTA_SIZE);
                 //this.eye.y+=DELTA_SIZE;
@@ -318,15 +333,15 @@ public class DefualtRendererInputHandler implements
                 gcodeRenderer.resetView();
                 break;
         }
-        
-        switch(ke.getKeyChar()) {
+
+        switch (ke.getKeyChar()) {
             case '+':
                 if (ke.isControlDown())
                     gcodeRenderer.zoom(1);
                 break;
         }
     }
-    
+
     /**
      * KeyListener method.
      */
