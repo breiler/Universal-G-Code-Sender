@@ -24,34 +24,63 @@ import com.willwinder.universalgcodesender.actions.OpenMacroSettingsAction;
 import com.willwinder.universalgcodesender.connection.ConnectionFactory;
 import com.willwinder.universalgcodesender.connection.IConnectionDevice;
 import com.willwinder.universalgcodesender.gcode.DefaultCommandCreator;
+import com.willwinder.universalgcodesender.i18n.Localization;
 import com.willwinder.universalgcodesender.listeners.ControllerState;
+import com.willwinder.universalgcodesender.listeners.ControllerStatus;
 import com.willwinder.universalgcodesender.listeners.MessageType;
+import com.willwinder.universalgcodesender.listeners.UGSEventListener;
+import static com.willwinder.universalgcodesender.model.Axis.X;
+import static com.willwinder.universalgcodesender.model.Axis.Y;
+import static com.willwinder.universalgcodesender.model.Axis.Z;
+import com.willwinder.universalgcodesender.model.BackendAPI;
 import com.willwinder.universalgcodesender.model.BaudRateEnum;
+import com.willwinder.universalgcodesender.model.GUIBackend;
+import com.willwinder.universalgcodesender.model.Position;
+import com.willwinder.universalgcodesender.model.UGSEvent;
 import com.willwinder.universalgcodesender.model.UnitUtils;
-import com.willwinder.universalgcodesender.model.events.*;
+import com.willwinder.universalgcodesender.model.events.CommandEvent;
+import com.willwinder.universalgcodesender.model.events.CommandEventType;
+import com.willwinder.universalgcodesender.model.events.ControllerStateEvent;
+import com.willwinder.universalgcodesender.model.events.ControllerStatusEvent;
+import com.willwinder.universalgcodesender.model.events.FileStateEvent;
+import com.willwinder.universalgcodesender.model.events.SettingChangedEvent;
+import com.willwinder.universalgcodesender.pendantui.PendantUI;
+import com.willwinder.universalgcodesender.pendantui.PendantURLBean;
+import com.willwinder.universalgcodesender.services.JogService;
+import com.willwinder.universalgcodesender.types.GcodeCommand;
+import com.willwinder.universalgcodesender.uielements.UGSSettingsDialog;
 import com.willwinder.universalgcodesender.uielements.components.GcodeFileTypeFilter;
+import com.willwinder.universalgcodesender.uielements.jog.JogPanel;
 import com.willwinder.universalgcodesender.uielements.macros.MacroActionPanel;
 import com.willwinder.universalgcodesender.uielements.panels.CommandPanel;
 import com.willwinder.universalgcodesender.uielements.panels.ConnectionSettingsPanel;
 import com.willwinder.universalgcodesender.uielements.panels.ControllerProcessorSettingsPanel;
-import com.willwinder.universalgcodesender.uielements.*;
 import com.willwinder.universalgcodesender.utils.FirmwareUtils;
+import com.willwinder.universalgcodesender.utils.GUIHelpers;
+import static com.willwinder.universalgcodesender.utils.GUIHelpers.displayErrorDialog;
+import com.willwinder.universalgcodesender.utils.GcodeStreamReader;
 import com.willwinder.universalgcodesender.utils.IGcodeStreamReader;
 import com.willwinder.universalgcodesender.utils.KeepAwakeUtils;
 import com.willwinder.universalgcodesender.utils.Settings;
 import com.willwinder.universalgcodesender.utils.SettingsFactory;
 import com.willwinder.universalgcodesender.utils.Version;
-import com.willwinder.universalgcodesender.i18n.Localization;
-import com.willwinder.universalgcodesender.model.BackendAPI;
-import com.willwinder.universalgcodesender.pendantui.PendantUI;
-import com.willwinder.universalgcodesender.types.GcodeCommand;
 import com.willwinder.universalgcodesender.visualizer.VisualizerWindow;
-import com.willwinder.universalgcodesender.model.UGSEvent;
-import com.willwinder.universalgcodesender.listeners.ControllerStatus;
-import com.willwinder.universalgcodesender.model.GUIBackend;
-import static com.willwinder.universalgcodesender.utils.GUIHelpers.displayErrorDialog;
+import org.apache.commons.lang3.SystemUtils;
 
-import java.awt.*;
+import javax.swing.InputMap;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
+import javax.swing.Timer;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.text.DefaultEditorKit;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -60,24 +89,12 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.swing.*;
-import javax.swing.Timer;
-import com.willwinder.universalgcodesender.listeners.UGSEventListener;
-import static com.willwinder.universalgcodesender.model.Axis.*;
-import com.willwinder.universalgcodesender.model.Position;
-import com.willwinder.universalgcodesender.pendantui.PendantURLBean;
-import com.willwinder.universalgcodesender.services.JogService;
-import com.willwinder.universalgcodesender.uielements.jog.JogPanel;
-import com.willwinder.universalgcodesender.utils.GUIHelpers;
-import com.willwinder.universalgcodesender.utils.GcodeStreamReader;
-
-import javax.swing.text.DefaultEditorKit;
-import org.apache.commons.lang3.SystemUtils;
 
 /**
  * Main window for Universal Gcode Sender Classic
@@ -227,11 +244,15 @@ public class MainWindow extends JFrame implements UGSEventListener {
         mw.showCommandTableCheckBoxActionPerformed(null);
         mw.firmwareComboBox.setSelectedItem(mw.settings.getFirmwareVersion());
 
-        if(mw.settings.isAutoStartPendant()) {
-            mw.pendantUI = new PendantUI(backend);
-            mw.pendantUI.start();
-            mw.startPendantServerButton.setEnabled(false);
-            mw.stopPendantServerButton.setEnabled(true);
+        if (mw.settings.isAutoStartPendant()) {
+            try {
+                mw.pendantUI = new PendantUI(backend);
+                mw.pendantUI.start();
+                mw.startPendantServerButton.setEnabled(false);
+                mw.stopPendantServerButton.setEnabled(true);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Could not start web pendant server", e);
+            }
         }
 
         mw.setSize(mw.settings.getMainWindowSettings().width, mw.settings.getMainWindowSettings().height);
