@@ -58,8 +58,7 @@ public class ConnectDisconnectAction extends BaseAction {
             Window window = ((Node) event.getSource()).getScene().getWindow();
 
             ConnectStage connectModal = new ConnectStage(window);
-            connectModal.showModal();
-
+            connectModal.showAndWait();
         } else {
             try {
                 backend.disconnect();

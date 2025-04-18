@@ -1,11 +1,11 @@
 package com.willwinder.universalgcodesender.fx.component;
 
-import com.willwinder.ugs.nbp.core.actions.ConnectDisconnectAction;
 import com.willwinder.ugs.nbp.core.actions.PauseAction;
 import com.willwinder.ugs.nbp.core.actions.SoftResetAction;
 import com.willwinder.ugs.nbp.core.actions.StopAction;
 import com.willwinder.ugs.nbp.core.actions.UnlockAction;
 import com.willwinder.universalgcodesender.fx.actions.ActionRegistry;
+import com.willwinder.universalgcodesender.fx.actions.ConnectDisconnectAction;
 import com.willwinder.universalgcodesender.fx.actions.OpenFileAction;
 import com.willwinder.universalgcodesender.fx.actions.StartAction;
 import com.willwinder.universalgcodesender.fx.control.ActionButton;
