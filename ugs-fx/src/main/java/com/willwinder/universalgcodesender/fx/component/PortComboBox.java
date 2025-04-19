@@ -86,12 +86,7 @@ public class PortComboBox extends ComboBox<IConnectionDevice> implements UGSEven
                 }
             });
 
-            // Remove old ports
-            portList.forEach(port -> {
-                if(!availablePorts.contains(port)) {
-                    portList.remove(port);
-                }
-            });
+            portList.removeIf(port -> !availablePorts.contains(port));
         });
     }
 
@@ -103,12 +98,10 @@ public class PortComboBox extends ComboBox<IConnectionDevice> implements UGSEven
     public void UGSEvent(UGSEvent evt) {
         if (evt instanceof SettingChangedEvent) {
             String currentPort = backend.getSettings().getPort();
-            Platform.runLater(() -> {
-                setValue(portList.stream()
-                        .filter(dev -> dev.getAddress().equals(currentPort))
-                        .findFirst()
-                        .orElse(null));
-            });
+            Platform.runLater(() -> setValue(portList.stream()
+                    .filter(dev -> dev.getAddress().equals(currentPort))
+                    .findFirst()
+                    .orElse(null)));
         }
     }
 }

@@ -4,6 +4,7 @@ import com.willwinder.ugs.nbp.lib.lookup.CentralLookup;
 import com.willwinder.universalgcodesender.connection.ConnectionDriver;
 import com.willwinder.universalgcodesender.fx.component.PortComboBox;
 import com.willwinder.universalgcodesender.model.BackendAPI;
+import com.willwinder.universalgcodesender.model.BaudRateEnum;
 import com.willwinder.universalgcodesender.utils.FirmwareUtils;
 import com.willwinder.universalgcodesender.utils.RefreshThread;
 import javafx.collections.FXCollections;
@@ -13,11 +14,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -30,11 +31,7 @@ public class ConnectStage extends Stage {
     private final BackendAPI backend;
     private final RefreshThread refreshThread;
     private final ComboBox<String> firmwareCombo;
-    private final ComboBox<Object> baudCombo;
-
-    private String selectedProtocol;
-    private String selectedAddress;
-    private String selectedPort;
+    private final ComboBox<String> baudCombo;
 
     public ConnectStage(Window owner) {
         // Set modality and owner
@@ -58,32 +55,27 @@ public class ConnectStage extends Stage {
         portCombo = new PortComboBox(backend);
 
         // Port dropdown
-        baudCombo = new ComboBox<>();
-        baudCombo.setItems(FXCollections.observableArrayList("80", "443", "502", "COM1", "COM3"));
-        baudCombo.getSelectionModel().selectFirst();
+        baudCombo = new ComboBox<>(FXCollections.observableArrayList(BaudRateEnum.getAllBaudRates()));
+        baudCombo.valueProperty().addListener((observable, oldValue, newValue) -> backend.getSettings().setPortRate(newValue));
+        baudCombo.getSelectionModel().select(backend.getSettings().getPortRate());
 
         // Connect button
         connectButton = new Button("Connect");
         connectButton.setDefaultButton(true);
-        connectButton.setOnAction(e -> {
-            selectedProtocol = protocolCombo.getValue();
-
-            close(); // Close modal
-        });
+        connectButton.setOnAction(e -> close());
 
         closeButton = new Button("Close");
-        connectButton.setOnAction(e -> close());
+        closeButton.setOnAction(e -> close());
 
         GridPane grid = new GridPane();
 
-        // Create ColumnConstraints for each column
         ColumnConstraints column1 = new ColumnConstraints();
-        column1.setMaxWidth(200);  // Set max width for the first column
-        column1.setHgrow(Priority.ALWAYS);  // Allow it to grow
+        column1.setMinWidth(100);
         grid.getColumnConstraints().add(column1);
 
         ColumnConstraints column2 = new ColumnConstraints();
-        column2.setMaxWidth(150);  // Set max width for the second column
+        column2.setMaxWidth(200);
+        column2.setHgrow(Priority.ALWAYS);
         grid.getColumnConstraints().add(column2);
 
         grid.setHgap(10);
@@ -92,21 +84,36 @@ public class ConnectStage extends Stage {
 
         grid.add(new Label("Protocol:"), 0, 0);
         grid.add(protocolCombo, 1, 0);
+        GridPane.setHgrow(protocolCombo, Priority.ALWAYS);
+        protocolCombo.setMaxWidth(Double.MAX_VALUE);
 
         grid.add(new Label("Firmware:"), 0, 1);
         grid.add(firmwareCombo, 1, 1);
+        GridPane.setHgrow(firmwareCombo, Priority.ALWAYS);
+        firmwareCombo.setMaxWidth(Double.MAX_VALUE);
 
         grid.add(new Label("Port:"), 0, 2);
         grid.add(portCombo, 1, 2);
+        GridPane.setHgrow(portCombo, Priority.ALWAYS);
+        portCombo.setMaxWidth(Double.MAX_VALUE);
 
         grid.add(new Label("Baud:"), 0, 3);
         grid.add(baudCombo, 1, 3);
+        GridPane.setHgrow(baudCombo, Priority.ALWAYS);
+        baudCombo.setMaxWidth(Double.MAX_VALUE);
 
-        HBox buttonBox = new HBox(closeButton, connectButton);
+        HBox buttonBox = new HBox(10, closeButton, connectButton);
+        buttonBox.setStyle("""
+                    -fx-background-color: white;
+                    -fx-border-color: #ccc;
+                    -fx-border-width: 1px 0 0 0;
+                    -fx-padding: 10;
+                """);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
-        VBox root = new VBox(10, grid, buttonBox);
-        root.setPadding(new Insets(10));
+        BorderPane root = new BorderPane();
+        root.setCenter(grid);
+        root.setBottom(buttonBox);
 
         setScene(new Scene(root));
         setWidth(350);
