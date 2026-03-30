@@ -41,7 +41,7 @@ public class DXFRegion extends DXFEntity {
     /**
      *
      *
-     * @see org.kabeja.dxf.DXFEntity#getType()
+     * @see DXFEntity#getType()
      */
     public String getType() {
         return DXFConstants.ENTITY_TYPE_REGION;

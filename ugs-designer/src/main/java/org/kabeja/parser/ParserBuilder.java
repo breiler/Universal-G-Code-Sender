@@ -286,7 +286,7 @@ public class ParserBuilder {
     }
 
     /**
-     * @see org.kabeja.parser.SAXParserBuilder the SAXParserBuilder for XML
+     * @see SAXParserBuilder the SAXParserBuilder for XML
      *      description
      *
      * @param file
