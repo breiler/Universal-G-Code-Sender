@@ -1,0 +1,79 @@
+/*
+    Copyright 2024 Will Winder
+
+    This file is part of Universal Gcode Sender (UGS).
+
+    UGS is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    UGS is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with UGS.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package com.willwinder.ugs.designer.actions;
+
+import com.willwinder.ugs.designer.entities.Anchor;
+import com.willwinder.ugs.designer.entities.Entity;
+import com.willwinder.ugs.designer.entities.selection.SelectionEvent;
+import com.willwinder.ugs.designer.entities.selection.SelectionListener;
+import com.willwinder.ugs.designer.entities.selection.SelectionManager;
+import com.willwinder.ugs.designer.logic.Controller;
+import com.willwinder.ugs.designer.logic.ControllerFactory;
+import com.willwinder.ugs.designer.utils.SvgLoader;
+
+import java.awt.event.ActionEvent;
+import java.awt.geom.Point2D;
+import java.util.List;
+
+/**
+ * An action for aligning objects
+ *
+ * @author Joacim Breiler
+ */
+public class AlignBottomAction extends AbstractDesignAction implements SelectionListener {
+    public static final String SMALL_ICON_PATH = "img/alignbottom.svg";
+    public static final String LARGE_ICON_PATH = "img/alignbottom24.svg";
+    private final transient Controller controller;
+
+    public AlignBottomAction() {
+        putValue("menuText", "Align bottom");
+        putValue(NAME, "Align bottom");
+        putValue("iconBase", SMALL_ICON_PATH);
+        putValue(SHORT_DESCRIPTION, "Align the objects at the bottom of the first selected entity");
+        putValue(SMALL_ICON, SvgLoader.loadImageIcon(SMALL_ICON_PATH, 16).orElse(null));
+        putValue(LARGE_ICON_KEY, SvgLoader.loadImageIcon(LARGE_ICON_PATH, 24).orElse(null));
+
+        this.controller = ControllerFactory.getController();
+        SelectionManager selectionManager = controller.getSelectionManager();
+        selectionManager.addSelectionListener(this);
+        onSelectionEvent(new SelectionEvent());
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        List<Entity> selection = controller.getSelectionManager().getSelection();
+        Entity entity = selection.get(0);
+        Point2D destination = entity.getPosition(Anchor.BOTTOM_CENTER);
+
+        com.willwinder.ugs.designer.actions.UndoActionList actionList = new com.willwinder.ugs.designer.actions.UndoActionList();
+        for (int i = 1; i < selection.size(); i++) {
+            Point2D position = selection.get(i).getPosition(Anchor.BOTTOM_CENTER);
+            actionList.add(new com.willwinder.ugs.designer.actions.MoveAction(List.of(selection.get(i)), new Point2D.Double(0, destination.getY() - position.getY())));
+        }
+
+        actionList.redo();
+        controller.getUndoManager().addAction(actionList);
+    }
+
+    @Override
+    public void onSelectionEvent(SelectionEvent selectionEvent) {
+        SelectionManager selectionManager = controller.getSelectionManager();
+        setEnabled(selectionManager.getSelection().size() > 1);
+    }
+}

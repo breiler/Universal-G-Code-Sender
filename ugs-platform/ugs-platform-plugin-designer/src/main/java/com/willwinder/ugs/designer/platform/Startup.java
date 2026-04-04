@@ -1,0 +1,63 @@
+/*
+    Copyright 2021 Will Winder
+
+    This file is part of Universal Gcode Sender (UGS).
+
+    UGS is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    UGS is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with UGS.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package com.willwinder.ugs.designer.platform;
+
+import com.willwinder.ugs.designer.DesignerMain;
+import com.willwinder.ugs.nbp.core.services.FileFilterService;
+import com.willwinder.ugs.designer.actions.OpenAction;
+import com.willwinder.ugs.designer.actions.SimpleUndoManager;
+import com.willwinder.ugs.designer.actions.UndoManager;
+import com.willwinder.ugs.designer.logic.Controller;
+import com.willwinder.ugs.designer.logic.ControllerFactory;
+import com.willwinder.ugs.nbp.lib.lookup.CentralLookup;
+import com.willwinder.universalgcodesender.model.BackendAPI;
+import com.willwinder.universalgcodesender.services.JogService;
+import com.willwinder.universalgcodesender.services.LookupService;
+import org.openide.modules.OnStart;
+import org.openide.util.Lookup;
+
+/**
+ * @author Joacim Breiler
+ */
+@OnStart
+public class Startup implements Runnable {
+
+    @Override
+    public void run() {
+        UndoManager undoManager = new SimpleUndoManager();
+        CentralLookup.getDefault().add(undoManager);
+
+        // Register a controller
+        Controller controller = ControllerFactory.getController();
+        CentralLookup.getDefault().add(controller);
+        CentralLookup.getDefault().add(controller.getUndoManager());
+        CentralLookup.getDefault().add(controller.getSelectionManager());
+
+        LookupService.registerProviders(DesignerMain.class.getPackage().getName());
+        LookupService.register(controller);
+        LookupService.register(controller.getUndoManager());
+        LookupService.register(controller.getSelectionManager());
+        LookupService.register(CentralLookup.getDefault().lookup(BackendAPI.class));
+        LookupService.register(CentralLookup.getDefault().lookup(JogService.class));
+
+        // Registers the file types that can be opened in UGSs
+        FileFilterService fileFilterService = Lookup.getDefault().lookup(FileFilterService.class);
+        fileFilterService.registerFileFilter(OpenAction.DESIGN_FILE_FILTER);
+    }
+}

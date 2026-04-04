@@ -26,6 +26,7 @@ package com.willwinder.ugs.nbp.lib.lookup;
 import com.willwinder.universalgcodesender.i18n.Localization;
 import com.willwinder.universalgcodesender.model.GUIBackend;
 import com.willwinder.universalgcodesender.services.JogService;
+import com.willwinder.universalgcodesender.services.LookupService;
 import com.willwinder.universalgcodesender.services.RunFromService;
 import com.willwinder.universalgcodesender.utils.GUIHelpers;
 import com.willwinder.universalgcodesender.utils.NarrowOptionPane;
@@ -63,9 +64,19 @@ public class CentralLookup extends AbstractLookup {
             backend.applySettings(settings);
 
             this.add(backend);
+            LookupService.register(backend);
+
             this.add(settings);
-            this.add(new JogService(backend));
-            this.add(new RunFromService(backend));
+            LookupService.register(settings);
+
+            JogService jogService = new JogService(backend);
+            this.add(jogService);
+            LookupService.register(jogService);
+
+            RunFromService runFromService = new RunFromService(backend);
+            this.add(runFromService);
+            LookupService.register(runFromService);
+
         } catch (Exception ex) {
             Logger.getLogger(CentralLookup.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(1);
