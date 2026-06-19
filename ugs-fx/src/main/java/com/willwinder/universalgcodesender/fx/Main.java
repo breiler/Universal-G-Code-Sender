@@ -38,6 +38,7 @@ import com.willwinder.universalgcodesender.fx.service.ShortcutService;
 import com.willwinder.universalgcodesender.fx.service.WorkspaceFileLoader;
 import com.willwinder.universalgcodesender.fx.service.WorkspaceManager;
 import com.willwinder.universalgcodesender.fx.settings.Settings;
+import com.willwinder.universalgcodesender.fx.settings.ShortcutSettings;
 import com.willwinder.universalgcodesender.i18n.Localization;
 import com.willwinder.universalgcodesender.model.GUIBackend;
 import com.willwinder.universalgcodesender.pendantui.PendantUI;
@@ -95,6 +96,8 @@ public class Main extends Application {
         MacroActionService.registerMacros();
 
         JogActionRegistry.registerActions();
+
+        ShortcutSettings.applyDefaultsIfNeeded();
     }
 
     @Override

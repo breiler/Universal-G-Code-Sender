@@ -61,9 +61,7 @@ public class OpenFileAction extends BaseAction {
                 new FileChooser.ExtensionFilter("Gcode files", "*.nc", "*.txt", "*.gcode", "*.ngc"),
                 new FileChooser.ExtensionFilter("UGS design files", "*.ugsd"));
 
-        Window window = ((Node) event.getSource()).getScene().getWindow();
-
-        File selectedFile = fileChooser.showOpenDialog(window);
+        File selectedFile = fileChooser.showOpenDialog(resolveWindow(event));
         if (selectedFile != null) {
             try {
                 WorkspaceManager.getInstance().open(selectedFile);
@@ -71,5 +69,16 @@ public class OpenFileAction extends BaseAction {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private static Window resolveWindow(ActionEvent event) {
+        if (event.getSource() instanceof Node node && node.getScene() != null) {
+            return node.getScene().getWindow();
+        }
+
+        return Window.getWindows().stream()
+                .filter(Window::isShowing)
+                .findFirst()
+                .orElse(null);
     }
 }

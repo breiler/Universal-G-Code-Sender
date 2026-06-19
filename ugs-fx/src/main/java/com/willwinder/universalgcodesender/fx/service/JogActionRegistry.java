@@ -19,7 +19,7 @@
 package com.willwinder.universalgcodesender.fx.service;
 
 import com.willwinder.universalgcodesender.fx.actions.Action;
-import com.willwinder.universalgcodesender.fx.component.jog.JogAction;
+import com.willwinder.universalgcodesender.fx.actions.JogAction;
 import com.willwinder.universalgcodesender.fx.component.jog.JogButtonEnum;
 
 import java.util.Arrays;

@@ -34,9 +34,19 @@ public class OpenSettingsAction extends BaseAction {
 
     @Override
     public void handleAction(ActionEvent event) {
-        // Connect modal
-        Window window = ((Node) event.getSource()).getScene().getWindow();
+        Window window = resolveWindow(event);
         SettingsStage modal = new SettingsStage(window);
         modal.showAndWait();
+    }
+
+    private static Window resolveWindow(ActionEvent event) {
+        if (event.getSource() instanceof Node node && node.getScene() != null) {
+            return node.getScene().getWindow();
+        }
+
+        return Window.getWindows().stream()
+                .filter(Window::isShowing)
+                .findFirst()
+                .orElse(null);
     }
 }

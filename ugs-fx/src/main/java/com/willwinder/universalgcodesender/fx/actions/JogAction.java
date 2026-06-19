@@ -16,11 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with UGS.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.willwinder.universalgcodesender.fx.component.jog;
+package com.willwinder.universalgcodesender.fx.actions;
 
-import com.willwinder.universalgcodesender.fx.actions.BaseAction;
 import static com.willwinder.universalgcodesender.fx.actions.LongPressMouseEventProxy.MOUSE_LONG_PRESSED;
 import static com.willwinder.universalgcodesender.fx.actions.LongPressMouseEventProxy.MOUSE_LONG_RELEASE;
+
+import com.willwinder.universalgcodesender.fx.component.jog.JogButtonEnum;
 import com.willwinder.universalgcodesender.services.LookupService;
 import com.willwinder.universalgcodesender.i18n.Localization;
 import com.willwinder.universalgcodesender.model.BackendAPI;

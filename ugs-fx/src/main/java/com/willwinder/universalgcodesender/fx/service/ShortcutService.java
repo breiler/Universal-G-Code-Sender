@@ -20,6 +20,7 @@ package com.willwinder.universalgcodesender.fx.service;
 
 import com.willwinder.universalgcodesender.fx.helper.ShortcutConverter;
 import com.willwinder.universalgcodesender.fx.model.ShortcutEvent;
+import com.willwinder.universalgcodesender.fx.settings.ShortcutSettings;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
@@ -31,14 +32,11 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.prefs.Preferences;
 
 /**
- * Stores action shortcut mappings to a preferences file.
+ * Stores action shortcut mappings. Persistence is delegated to {@link ShortcutSettings}.
  */
 public class ShortcutService {
-    private static final Preferences preferences = Preferences.userNodeForPackage(ShortcutService.class);
-
     private static final ObservableMap<String, String> shortcuts =
             FXCollections.observableHashMap();
 
@@ -52,7 +50,7 @@ public class ShortcutService {
         shortcuts.clear();
 
         ActionRegistry.getInstance().getActions().forEach(action ->
-                Optional.ofNullable(preferences.get(action.getId(), null))
+                ShortcutSettings.getShortcut(action.getId())
                         .ifPresent(shortcut -> shortcuts.put(action.getId(), shortcut)));
     }
 
@@ -61,7 +59,7 @@ public class ShortcutService {
     }
 
     public static void setShortcut(String actionId, String shortcut) {
-        preferences.put(actionId, shortcut);
+        ShortcutSettings.saveShortcut(actionId, shortcut);
         shortcuts.put(actionId, shortcut);
     }
 
@@ -71,7 +69,7 @@ public class ShortcutService {
 
     public static void removeShortcut(String id) {
         shortcuts.remove(id);
-        preferences.remove(id);
+        ShortcutSettings.removeShortcut(id);
     }
 
     public static Optional<String> getActionId(String shortcut) {

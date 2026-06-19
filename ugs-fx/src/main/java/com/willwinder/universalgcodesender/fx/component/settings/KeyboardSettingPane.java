@@ -23,16 +23,29 @@ import com.willwinder.universalgcodesender.fx.service.ActionRegistry;
 import com.willwinder.universalgcodesender.fx.component.ActionIconTableCell;
 import com.willwinder.universalgcodesender.fx.component.ActionShortcutTableCell;
 import com.willwinder.universalgcodesender.fx.service.ShortcutService;
+import com.willwinder.universalgcodesender.fx.settings.ShortcutSettings;
 import com.willwinder.universalgcodesender.i18n.Localization;
+import com.willwinder.universalgcodesender.utils.GUIHelpers;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
+import javafx.event.ActionEvent;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
+
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class KeyboardSettingPane extends VBox {
 
@@ -62,7 +75,74 @@ public class KeyboardSettingPane extends VBox {
 
         VBox.setVgrow(table, Priority.ALWAYS);
 
+        addButtonSection();
+
         ShortcutService.getShortcuts().addListener((MapChangeListener<String, String>) change -> table.refresh());
+    }
+
+    private void addButtonSection() {
+        Button importButton = new Button(Localization.getString("settings.keyboard.import"));
+        importButton.setOnAction(this::importShortcuts);
+
+        Button exportButton = new Button(Localization.getString("settings.keyboard.export"));
+        exportButton.setOnAction(this::exportShortcuts);
+
+        Button restoreDefaultsButton = new Button(Localization.getString("settings.keyboard.restoreDefaults"));
+        restoreDefaultsButton.setOnAction(event -> ShortcutSettings.restoreDefaults());
+
+        HBox buttonRow = new HBox(10, importButton, exportButton, restoreDefaultsButton);
+        buttonRow.setAlignment(Pos.CENTER_RIGHT);
+        getChildren().add(buttonRow);
+    }
+
+    private void importShortcuts(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(Localization.getString("settings.keyboard.import"));
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON files", "*.json"));
+
+        File selectedFile = fileChooser.showOpenDialog(resolveWindow(event));
+        if (selectedFile == null) {
+            return;
+        }
+
+        try {
+            ShortcutSettings.importShortcuts(selectedFile);
+        } catch (Exception e) {
+            GUIHelpers.displayErrorDialog(e.getLocalizedMessage());
+        }
+    }
+
+    private void exportShortcuts(ActionEvent event) {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(Localization.getString("settings.keyboard.export"));
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        fileChooser.setInitialFileName("shortcuts-" + timestamp + ".json");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON files", "*.json"));
+
+        File selectedFile = fileChooser.showSaveDialog(resolveWindow(event));
+        if (selectedFile == null) {
+            return;
+        }
+
+        if (!selectedFile.getName().toLowerCase().endsWith(".json")) {
+            selectedFile = new File(selectedFile.getParentFile(), selectedFile.getName() + ".json");
+        }
+
+        try {
+            ShortcutSettings.exportShortcuts(selectedFile);
+        } catch (Exception e) {
+            GUIHelpers.displayErrorDialog(e.getLocalizedMessage());
+        }
+    }
+
+    private static Window resolveWindow(ActionEvent event) {
+        if (event.getSource() instanceof Node node && node.getScene() != null) {
+            return node.getScene().getWindow();
+        }
+        return null;
     }
 
     private void addTitleSection() {
