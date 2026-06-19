@@ -3,6 +3,7 @@ package com.willwinder.universalgcodesender.fx.component.dro;
 import com.willwinder.universalgcodesender.model.Unit;
 import com.willwinder.universalgcodesender.model.UnitUtils;
 import com.willwinder.universalgcodesender.model.UnitValue;
+import com.willwinder.universalgcodesender.fx.settings.Settings;
 import com.willwinder.universalgcodesender.model.events.SettingChangedEvent;
 import com.willwinder.universalgcodesender.services.LookupService;
 import com.willwinder.universalgcodesender.listeners.ControllerState;
@@ -53,6 +54,10 @@ public class MachineStatusPane extends GridPane {
         add(feedRate, 0, row);
         add(spindleSpeed, 1, row);
 
+        for (Axis axis : Axis.values()) {
+            Settings.getInstance().axisVisibleProperty(axis).addListener((obs, oldVal, newVal) -> updateState());
+        }
+
         updateState();
     }
 
@@ -88,7 +93,8 @@ public class MachineStatusPane extends GridPane {
     }
 
     private boolean shouldShowAxis(Axis axis, Position workPosition, Position machinePosition) {
-        return containsAxis(workPosition, axis) || containsAxis(machinePosition, axis);
+        boolean axisVisible = Settings.getInstance().axisVisibleProperty(axis).get();
+        return axisVisible && (containsAxis(workPosition, axis) || containsAxis(machinePosition, axis));
     }
 
     private void syncAxisRows(Position workPosition, Position machinePosition) {

@@ -22,6 +22,7 @@ import com.willwinder.universalgcodesender.fx.component.SettingsRow;
 import com.willwinder.universalgcodesender.fx.control.SwitchButton;
 import com.willwinder.universalgcodesender.fx.settings.Settings;
 import com.willwinder.universalgcodesender.i18n.Localization;
+import com.willwinder.universalgcodesender.model.Axis;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -32,6 +33,7 @@ public class MachineStatusSettingsPane extends VBox {
         setSpacing(20);
         addTitleSection();
         addShowMachinePositionSection();
+        addShowAxisSection();
     }
 
     private void addTitleSection() {
@@ -44,5 +46,14 @@ public class MachineStatusSettingsPane extends VBox {
         SwitchButton showMachinePositionToggle = new SwitchButton();
         showMachinePositionToggle.selectedProperty().bindBidirectional(Settings.getInstance().showMachinePositionProperty());
         getChildren().add(new SettingsRow(Localization.getString("settings.showMachinePosition"), showMachinePositionToggle));
+    }
+
+    private void addShowAxisSection() {
+        for (Axis axis : Axis.values()) {
+            SwitchButton showAxisToggle = new SwitchButton();
+            showAxisToggle.selectedProperty().bindBidirectional(Settings.getInstance().axisVisibleProperty(axis));
+            String title = String.format(Localization.getString("settings.showAxis"), axis.name());
+            getChildren().add(new SettingsRow(title, showAxisToggle));
+        }
     }
 }
