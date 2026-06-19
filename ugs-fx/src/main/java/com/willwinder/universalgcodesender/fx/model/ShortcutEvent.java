@@ -28,6 +28,9 @@ public class ShortcutEvent extends Event {
     public static final EventType<ShortcutEvent> SHORTCUT_RELEASED =
             new EventType<>(Event.ANY, "SHORTCUT_RELEASED");
 
+    public static final EventType<ShortcutEvent> SHORTCUT_LONG_PRESSED =
+            new EventType<>(Event.ANY, "SHORTCUT_LONG_PRESSED");
+
     public ShortcutEvent(EventType<ShortcutEvent> eventType) {
         super(eventType);
     }

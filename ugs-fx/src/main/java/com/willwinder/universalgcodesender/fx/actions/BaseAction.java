@@ -120,12 +120,15 @@ public abstract class BaseAction implements Action {
         } else if (event instanceof MouseEvent mouseEvent) {
             mouseEventHandler.handle(mouseEvent);
         } else if (event instanceof ShortcutEvent shortcutEvent) {
-            if (shortcutEvent.getEventType() == ShortcutEvent.SHORTCUT_PRESSED) {
-                // Only listen for shortcut presses for now, possible to add continuous worker later
-                handleAction(new ActionEvent());
-            }
+            handleShortcutEvent(shortcutEvent);
         } else {
             LOGGER.info("Unknown event type for triggering action: " + event.getClass().getName());
+        }
+    }
+
+    public void handleShortcutEvent(ShortcutEvent event) {
+        if (event.getEventType() == ShortcutEvent.SHORTCUT_PRESSED) {
+            handleAction(new ActionEvent());
         }
     }
 

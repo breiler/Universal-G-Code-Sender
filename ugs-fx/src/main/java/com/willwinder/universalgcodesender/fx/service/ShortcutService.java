@@ -24,23 +24,42 @@ import com.willwinder.universalgcodesender.fx.settings.ShortcutSettings;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
+import javafx.event.EventType;
 import javafx.scene.Scene;
 import static javafx.scene.input.KeyEvent.KEY_PRESSED;
 import static javafx.scene.input.KeyEvent.KEY_RELEASED;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Stores action shortcut mappings. Persistence is delegated to {@link ShortcutSettings}.
  */
 public class ShortcutService {
+    /**
+     * Time in milliseconds a shortcut must be held before it is considered a long press.
+     */
+    private static final long LONG_PRESS_DELAY = 300;
+
     private static final ObservableMap<String, String> shortcuts =
             FXCollections.observableHashMap();
 
     private static final Set<String> pressedKeys = ConcurrentHashMap.newKeySet();
+
+    private static final ScheduledExecutorService longPressExecutor = Executors.newSingleThreadScheduledExecutor(runnable -> {
+        Thread thread = new Thread(runnable, "shortcut-long-press");
+        thread.setDaemon(true);
+        return thread;
+    });
+
+    private static final Map<String, ScheduledFuture<?>> longPressTimers = new ConcurrentHashMap<>();
 
     static {
         loadFromPreferences();
@@ -94,9 +113,8 @@ public class ShortcutService {
             }
 
             pressedKeys.add(shortcut);
-            ShortcutService.getActionId(shortcut)
-                    .flatMap(id -> ActionRegistry.getInstance().getAction(id))
-                    .ifPresent(a -> Platform.runLater(() -> a.handle(new ShortcutEvent(ShortcutEvent.SHORTCUT_PRESSED))));
+            dispatch(shortcut, ShortcutEvent.SHORTCUT_PRESSED);
+            scheduleLongPress(shortcut);
         });
 
         scene.addEventFilter(KEY_RELEASED, e -> {
@@ -105,9 +123,29 @@ public class ShortcutService {
                 return;
             }
             pressedKeys.remove(shortcut);
-            ShortcutService.getActionId(shortcut)
-                    .flatMap(id -> ActionRegistry.getInstance().getAction(id))
-                    .ifPresent(a -> Platform.runLater(() -> a.handle(new ShortcutEvent(ShortcutEvent.SHORTCUT_RELEASED))));
+            cancelLongPress(shortcut);
+            dispatch(shortcut, ShortcutEvent.SHORTCUT_RELEASED);
         });
+    }
+
+    private static void dispatch(String shortcut, EventType<ShortcutEvent> eventType) {
+        ShortcutService.getActionId(shortcut)
+                .flatMap(id -> ActionRegistry.getInstance().getAction(id))
+                .ifPresent(a -> Platform.runLater(() -> a.handle(new ShortcutEvent(eventType))));
+    }
+
+    private static void scheduleLongPress(String shortcut) {
+        ScheduledFuture<?> timer = longPressExecutor.schedule(
+                () -> dispatch(shortcut, ShortcutEvent.SHORTCUT_LONG_PRESSED),
+                LONG_PRESS_DELAY,
+                TimeUnit.MILLISECONDS);
+        longPressTimers.put(shortcut, timer);
+    }
+
+    private static void cancelLongPress(String shortcut) {
+        ScheduledFuture<?> timer = longPressTimers.remove(shortcut);
+        if (timer != null) {
+            timer.cancel(false);
+        }
     }
 }

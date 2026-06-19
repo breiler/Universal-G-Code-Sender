@@ -22,6 +22,7 @@ import static com.willwinder.universalgcodesender.fx.actions.LongPressMouseEvent
 import static com.willwinder.universalgcodesender.fx.actions.LongPressMouseEventProxy.MOUSE_LONG_RELEASE;
 
 import com.willwinder.universalgcodesender.fx.component.jog.JogButtonEnum;
+import com.willwinder.universalgcodesender.fx.model.ShortcutEvent;
 import com.willwinder.universalgcodesender.services.LookupService;
 import com.willwinder.universalgcodesender.i18n.Localization;
 import com.willwinder.universalgcodesender.model.BackendAPI;
@@ -104,6 +105,18 @@ public class JogAction extends BaseAction {
         } else if (continuousJogWorker.isWorking() && (mouseEvent.getEventType() == MouseEvent.MOUSE_RELEASED || mouseEvent.getEventType() == MOUSE_LONG_RELEASE)) {
             continuousJogWorker.stop();
         } else if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED) {
+            handleAction(new ActionEvent());
+        }
+    }
+
+    @Override
+    public void handleShortcutEvent(ShortcutEvent event) {
+        if (event.getEventType() == ShortcutEvent.SHORTCUT_LONG_PRESSED) {
+            continuousJogWorker.setDirection(jogButtonEnum.getX(), jogButtonEnum.getY(), jogButtonEnum.getZ(), jogButtonEnum.getA(), jogButtonEnum.getB(), jogButtonEnum.getC());
+            continuousJogWorker.start();
+        } else if (continuousJogWorker.isWorking() && event.getEventType() == ShortcutEvent.SHORTCUT_RELEASED) {
+            continuousJogWorker.stop();
+        } else if (event.getEventType() == ShortcutEvent.SHORTCUT_PRESSED) {
             handleAction(new ActionEvent());
         }
     }
