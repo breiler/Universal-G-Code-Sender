@@ -22,6 +22,7 @@ import com.willwinder.ugs.designer.actions.ChangeEntitySettingsAction;
 import com.willwinder.ugs.designer.actions.UndoableAction;
 import com.willwinder.ugs.designer.entities.Entity;
 import com.willwinder.ugs.designer.entities.EntitySetting;
+import com.willwinder.ugs.designer.entities.cuttable.AbstractCuttable;
 import com.willwinder.ugs.designer.entities.cuttable.CutType;
 import com.willwinder.ugs.designer.entities.cuttable.Cuttable;
 import com.willwinder.ugs.designer.entities.cuttable.Direction;
@@ -79,6 +80,9 @@ public class CuttableSettingsPanel extends JPanel implements EntitySettingsPanel
     private ToolPathDirectionCombo toolPathDirectionCombo;
     private JCheckBox roughingCheckBox;
     private UnitSpinner stockToLeaveSpinner;
+    private JSlider tabCountSlider;
+    private UnitSpinner tabWidthSpinner;
+    private UnitSpinner tabHeightSpinner;
 
     private final Map<EntitySetting, List<JComponent>> settingToComponentMap = new EnumMap<>(EntitySetting.class);
 
@@ -111,6 +115,10 @@ public class CuttableSettingsPanel extends JPanel implements EntitySettingsPanel
         roughingCheckBox = new JCheckBox();
         roughingCheckBox.setSelected(true);
         stockToLeaveSpinner = new UnitSpinner(0.2, Unit.MM, 0d, 10000d, 0.1d);
+
+        tabCountSlider = createSlider(0, 8, 0, 1, 2);
+        tabWidthSpinner = new UnitSpinner(AbstractCuttable.DEFAULT_TAB_WIDTH, Unit.MM, 0.1d, 10000d, 0.5d);
+        tabHeightSpinner = new UnitSpinner(AbstractCuttable.DEFAULT_TAB_HEIGHT, Unit.MM, 0.1d, 10000d, 0.1d);
     }
 
     private JSlider createSlider(int min, int max, int value, int minorTick, int majorTick) {
@@ -138,6 +146,9 @@ public class CuttableSettingsPanel extends JPanel implements EntitySettingsPanel
         addLabeledComponent(EntitySetting.TOOL_PATH_DIRECTION, "Tool Path Direction", toolPathDirectionCombo);
         addLabeledComponent(EntitySetting.ROUGHING, "Roughing", roughingCheckBox);
         addLabeledComponent(EntitySetting.STOCK_TO_LEAVE, "Stock to Leave", stockToLeaveSpinner);
+        addLabeledSlider(EntitySetting.TAB_COUNT, "Holding Tabs", tabCountSlider);
+        addLabeledComponent(EntitySetting.TAB_WIDTH, "Tab Width", tabWidthSpinner);
+        addLabeledComponent(EntitySetting.TAB_HEIGHT, "Tab Height", tabHeightSpinner);
         addLabeledComponent(EntitySetting.INCLUDE_IN_EXPORT, "Include in Export", includeInExport);
     }
 
@@ -175,6 +186,13 @@ public class CuttableSettingsPanel extends JPanel implements EntitySettingsPanel
             setEnabled(isEnabled());
         });
         stockToLeaveSpinner.addChangeListener(e -> firePropertyChange(EntitySetting.STOCK_TO_LEAVE, stockToLeaveSpinner.getValue()));
+        tabCountSlider.addChangeListener(e -> {
+            firePropertyChange(EntitySetting.TAB_COUNT, tabCountSlider.getValue());
+            // Show or hide the tab dimensions depending on if any tabs are used
+            setEnabled(isEnabled());
+        });
+        tabWidthSpinner.addChangeListener(e -> firePropertyChange(EntitySetting.TAB_WIDTH, tabWidthSpinner.getValue()));
+        tabHeightSpinner.addChangeListener(e -> firePropertyChange(EntitySetting.TAB_HEIGHT, tabHeightSpinner.getValue()));
         directionCombo.addActionListener(e -> firePropertyChange(EntitySetting.DIRECTION, directionCombo.getSelectedDirection()));
         toolPathDirectionCombo.addActionListener(e -> firePropertyChange(EntitySetting.TOOL_PATH_DIRECTION, toolPathDirectionCombo.getSelectedDirection()));
     }
@@ -204,6 +222,10 @@ public class CuttableSettingsPanel extends JPanel implements EntitySettingsPanel
         // Add only the components that are relevant for the selected cut type
         selectedCutType.getSettings().forEach(setting -> {
             if (setting == EntitySetting.STOCK_TO_LEAVE && !roughingCheckBox.isSelected()) {
+                return;
+            }
+
+            if ((setting == EntitySetting.TAB_WIDTH || setting == EntitySetting.TAB_HEIGHT) && tabCountSlider.getValue() == 0) {
                 return;
             }
 
@@ -269,6 +291,9 @@ public class CuttableSettingsPanel extends JPanel implements EntitySettingsPanel
                 toolPathDirectionCombo.setSelectedItem(firstCuttable.getToolPathDirection());
                 roughingCheckBox.setSelected((Boolean) firstCuttable.getEntitySetting(EntitySetting.ROUGHING).orElse(Boolean.TRUE));
                 stockToLeaveSpinner.setValue(((Number) firstCuttable.getEntitySetting(EntitySetting.STOCK_TO_LEAVE).orElse(0.0)).doubleValue());
+                tabCountSlider.setValue(firstCuttable.getTabCount());
+                tabWidthSpinner.setValue(firstCuttable.getTabWidth());
+                tabHeightSpinner.setValue(firstCuttable.getTabHeight());
                 updateLabelsForCutType(firstCuttable.getCutType());
             } finally {
                 updating = false;
@@ -322,6 +347,12 @@ public class CuttableSettingsPanel extends JPanel implements EntitySettingsPanel
             cuttable.setEntitySetting(EntitySetting.ROUGHING, newValue);
         } else if (EntitySetting.STOCK_TO_LEAVE.equals(setting)) {
             cuttable.setEntitySetting(EntitySetting.STOCK_TO_LEAVE, newValue);
+        } else if (EntitySetting.TAB_COUNT.equals(setting)) {
+            cuttable.setTabCount(((Number) newValue).intValue());
+        } else if (EntitySetting.TAB_WIDTH.equals(setting)) {
+            cuttable.setTabWidth(((Number) newValue).doubleValue());
+        } else if (EntitySetting.TAB_HEIGHT.equals(setting)) {
+            cuttable.setTabHeight(((Number) newValue).doubleValue());
         }
     }
 

@@ -58,7 +58,10 @@ public enum EntitySetting {
     RASTER_DEPTH_CONTRAST("Contrast"),
     RASTER_DEPTH_EMPHASIS("Subject emphasis"),
     ROUGHING("Roughing"),
-    STOCK_TO_LEAVE("Stock to leave");
+    STOCK_TO_LEAVE("Stock to leave"),
+    TAB_COUNT("Holding tabs"),
+    TAB_WIDTH("Tab width"),
+    TAB_HEIGHT("Tab height");
 
     public static final List<EntitySetting> TRANSFORMATION_SETTINGS = List.of(
             EntitySetting.POSITION_X,
@@ -76,6 +79,17 @@ public enum EntitySetting {
             EntitySetting.TARGET_DEPTH,
             EntitySetting.SPINDLE_SPEED,
             EntitySetting.FEED_RATE,
+            EntitySetting.INCLUDE_IN_EXPORT);
+
+    public static final List<EntitySetting> DEFAULT_OUTLINE_SETTINGS = List.of(
+            EntitySetting.CUT_TYPE,
+            EntitySetting.START_DEPTH,
+            EntitySetting.TARGET_DEPTH,
+            EntitySetting.SPINDLE_SPEED,
+            EntitySetting.FEED_RATE,
+            EntitySetting.TAB_COUNT,
+            EntitySetting.TAB_WIDTH,
+            EntitySetting.TAB_HEIGHT,
             EntitySetting.INCLUDE_IN_EXPORT);
 
     public static final List<EntitySetting> DEFAULT_POCKET_SETTINGS = List.of(

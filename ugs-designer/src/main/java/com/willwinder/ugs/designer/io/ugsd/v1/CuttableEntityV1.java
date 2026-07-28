@@ -20,6 +20,7 @@ package com.willwinder.ugs.designer.io.ugsd.v1;
 
 import com.google.gson.annotations.Expose;
 import com.willwinder.ugs.designer.entities.Entity;
+import com.willwinder.ugs.designer.entities.cuttable.AbstractCuttable;
 import com.willwinder.ugs.designer.entities.cuttable.Cuttable;
 
 import java.awt.geom.AffineTransform;
@@ -51,6 +52,15 @@ public class CuttableEntityV1 extends EntityV1 {
 
     @Expose
     private int leadInPercent;
+
+    @Expose
+    private Integer tabCount;
+
+    @Expose
+    private Double tabWidth;
+
+    @Expose
+    private Double tabHeight;
 
     @Expose
     private double toolPathDirection;
@@ -116,6 +126,18 @@ public class CuttableEntityV1 extends EntityV1 {
         this.leadInPercent = leadInPercent;
     }
 
+    public void setTabCount(int tabCount) {
+        this.tabCount = tabCount;
+    }
+
+    public void setTabWidth(double tabWidth) {
+        this.tabWidth = tabWidth;
+    }
+
+    public void setTabHeight(double tabHeight) {
+        this.tabHeight = tabHeight;
+    }
+
     public void setToolPathAngle(double toolPathAngle) {
         this.toolPathDirection = toolPathAngle;
     }
@@ -148,6 +170,9 @@ public class CuttableEntityV1 extends EntityV1 {
             cuttable.setPasses(passes);
             cuttable.setFeedRate(feedRate);
             cuttable.setLeadInPercent(leadInPercent);
+            cuttable.setTabCount(tabCount == null ? 0 : tabCount);
+            cuttable.setTabWidth(tabWidth == null ? AbstractCuttable.DEFAULT_TAB_WIDTH : tabWidth);
+            cuttable.setTabHeight(tabHeight == null ? AbstractCuttable.DEFAULT_TAB_HEIGHT : tabHeight);
             cuttable.setToolPathAngle(toolPathDirection);
             cuttable.setDirection(DirectionTypeV1.toDirection(direction));
             cuttable.setToolPathDirection(ToolPathDirectionTypeV1.toDirection(pathDirection));

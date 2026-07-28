@@ -22,6 +22,9 @@ public class CuttableEntitySettings {
             case PASSES -> Optional.of(cuttable.getPasses());
             case FEED_RATE -> Optional.of(cuttable.getFeedRate());
             case LEAD_IN_PERCENT -> Optional.of(cuttable.getLeadInPercent());
+            case TAB_COUNT -> Optional.of(cuttable.getTabCount());
+            case TAB_WIDTH -> Optional.of(cuttable.getTabWidth());
+            case TAB_HEIGHT -> Optional.of(cuttable.getTabHeight());
             case INCLUDE_IN_EXPORT -> Optional.of(cuttable.getIncludeInExport());
             case TOOL_PATH_ANGLE -> Optional.of(cuttable.getToolPathAngle());
             case TOOL_PATH_DIRECTION -> Optional.of(cuttable.getToolPathDirection());
@@ -39,6 +42,9 @@ public class CuttableEntitySettings {
             case PASSES -> cuttable.setPasses(Integer.parseInt(value.toString()));
             case FEED_RATE -> cuttable.setFeedRate(((Double) value).intValue());
             case LEAD_IN_PERCENT -> cuttable.setLeadInPercent((Integer) value);
+            case TAB_COUNT -> cuttable.setTabCount(((Number) value).intValue());
+            case TAB_WIDTH -> cuttable.setTabWidth(((Number) value).doubleValue());
+            case TAB_HEIGHT -> cuttable.setTabHeight(((Number) value).doubleValue());
             case INCLUDE_IN_EXPORT -> cuttable.setIncludeInExport((Boolean) value);
             case TOOL_PATH_ANGLE -> cuttable.setToolPathAngle((Double) value);
             case TOOL_PATH_DIRECTION -> cuttable.setToolPathDirection((ToolPathDirection) value);

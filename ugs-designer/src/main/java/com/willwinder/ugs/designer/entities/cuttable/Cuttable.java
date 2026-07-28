@@ -193,6 +193,49 @@ public interface Cuttable extends Entity {
     Direction getDirection();
 
     /**
+     * Sets the number of holding tabs to leave along the cut, where zero means that the entity is cut
+     * without tabs.
+     *
+     * @param tabCount the number of tabs
+     */
+    void setTabCount(int tabCount);
+
+    /**
+     * Returns the number of holding tabs to leave along the cut.
+     *
+     * @return the number of tabs
+     */
+    int getTabCount();
+
+    /**
+     * Sets the width of a holding tab in millimeters, measured across its top.
+     *
+     * @param tabWidth the width in millimeters
+     */
+    void setTabWidth(double tabWidth);
+
+    /**
+     * Returns the width of a holding tab in millimeters.
+     *
+     * @return the width in millimeters
+     */
+    double getTabWidth();
+
+    /**
+     * Sets how thick the material left under the tool at a holding tab should be.
+     *
+     * @param tabHeight the height in millimeters
+     */
+    void setTabHeight(double tabHeight);
+
+    /**
+     * Returns how thick the material left under the tool at a holding tab is.
+     *
+     * @return the height in millimeters
+     */
+    double getTabHeight();
+
+    /**
      * Returns a list of available cut types for this entity
      *
      * @return a list of cut types

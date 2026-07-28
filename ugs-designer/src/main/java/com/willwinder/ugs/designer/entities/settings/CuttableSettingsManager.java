@@ -73,6 +73,9 @@ public class CuttableSettingsManager implements EntitySettingsManager {
             case PASSES -> cuttable.getPasses();
             case FEED_RATE -> cuttable.getFeedRate();
             case LEAD_IN_PERCENT -> cuttable.getLeadInPercent();
+            case TAB_COUNT -> cuttable.getTabCount();
+            case TAB_WIDTH -> cuttable.getTabWidth();
+            case TAB_HEIGHT -> cuttable.getTabHeight();
             case INCLUDE_IN_EXPORT -> cuttable.getIncludeInExport();
             case DIRECTION -> cuttable.getDirection();
             case TOOL_PATH_ANGLE -> cuttable.getToolPathAngle();
@@ -130,6 +133,21 @@ public class CuttableSettingsManager implements EntitySettingsManager {
                     cuttable.setIncludeInExport(include);
                 }
             }
+            case TAB_COUNT -> {
+                if (value instanceof Number tabCount) {
+                    cuttable.setTabCount(tabCount.intValue());
+                }
+            }
+            case TAB_WIDTH -> {
+                if (value instanceof Number tabWidth) {
+                    cuttable.setTabWidth(tabWidth.doubleValue());
+                }
+            }
+            case TAB_HEIGHT -> {
+                if (value instanceof Number tabHeight) {
+                    cuttable.setTabHeight(tabHeight.doubleValue());
+                }
+            }
             case TOOL_PATH_ANGLE -> {
                 if (value instanceof Double toolPathAngle) {
                     cuttable.setToolPathAngle(toolPathAngle);
@@ -179,6 +197,9 @@ public class CuttableSettingsManager implements EntitySettingsManager {
         settings.add(EntitySetting.INCLUDE_IN_EXPORT);
         settings.add(EntitySetting.ROUGHING);
         settings.add(EntitySetting.STOCK_TO_LEAVE);
+        settings.add(EntitySetting.TAB_COUNT);
+        settings.add(EntitySetting.TAB_WIDTH);
+        settings.add(EntitySetting.TAB_HEIGHT);
         return settings;
     }
 }

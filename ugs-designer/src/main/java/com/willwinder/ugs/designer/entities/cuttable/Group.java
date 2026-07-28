@@ -178,6 +178,57 @@ public class Group extends EntityGroup implements Cuttable {
     }
 
     @Override
+    public int getTabCount() {
+        return getCuttableStream()
+                .mapToInt(Cuttable::getTabCount)
+                .max()
+                .orElse(0);
+    }
+
+    @Override
+    public void setTabCount(int tabCount) {
+        getChildren().forEach(child -> {
+            if (child instanceof Cuttable cuttable) {
+                cuttable.setTabCount(tabCount);
+            }
+        });
+    }
+
+    @Override
+    public double getTabWidth() {
+        return getCuttableStream()
+                .mapToDouble(Cuttable::getTabWidth)
+                .max()
+                .orElse(AbstractCuttable.DEFAULT_TAB_WIDTH);
+    }
+
+    @Override
+    public void setTabWidth(double tabWidth) {
+        getChildren().forEach(child -> {
+            if (child instanceof Cuttable cuttable) {
+                cuttable.setTabWidth(tabWidth);
+            }
+        });
+    }
+
+    @Override
+    public double getTabHeight() {
+        return getCuttableStream()
+                .mapToDouble(Cuttable::getTabHeight)
+                .max()
+                .orElse(AbstractCuttable.DEFAULT_TAB_HEIGHT);
+    }
+
+    @Override
+    public void setTabHeight(double tabHeight) {
+        getChildren().forEach(child -> {
+            if (child instanceof Cuttable cuttable) {
+                cuttable.setTabHeight(tabHeight);
+            }
+        });
+    }
+
+    @Override
     public boolean getIncludeInExport() {
         for (Entity child : getChildren()) {
             if (child instanceof Cuttable cuttable) {

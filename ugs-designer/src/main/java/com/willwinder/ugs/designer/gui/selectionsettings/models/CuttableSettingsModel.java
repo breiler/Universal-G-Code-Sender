@@ -19,6 +19,7 @@
 package com.willwinder.ugs.designer.gui.selectionsettings.models;
 
 import com.willwinder.ugs.designer.entities.EntitySetting;
+import com.willwinder.ugs.designer.entities.cuttable.AbstractCuttable;
 import com.willwinder.ugs.designer.entities.cuttable.CutType;
 import com.willwinder.ugs.designer.entities.cuttable.Group;
 import com.willwinder.ugs.designer.logic.Controller;
@@ -40,6 +41,9 @@ public class CuttableSettingsModel extends TransformSettingsModel {
     private int feedRate = getDefaultFeedRate();
     private int leadInPercent = 0;
     private boolean includeInExport = true;
+    private int tabCount = 0;
+    private double tabWidth = AbstractCuttable.DEFAULT_TAB_WIDTH;
+    private double tabHeight = AbstractCuttable.DEFAULT_TAB_HEIGHT;
 
     // Getters and setters for cuttable properties
     public CutType getCutType() {
@@ -122,6 +126,39 @@ public class CuttableSettingsModel extends TransformSettingsModel {
         }
     }
 
+    public int getTabCount() {
+        return tabCount;
+    }
+
+    public void setTabCount(int tabCount) {
+        if (valuesNotEquals(this.tabCount, tabCount)) {
+            this.tabCount = tabCount;
+            notifyListeners(EntitySetting.TAB_COUNT);
+        }
+    }
+
+    public double getTabWidth() {
+        return tabWidth;
+    }
+
+    public void setTabWidth(double tabWidth) {
+        if (valuesNotEquals(this.tabWidth, tabWidth)) {
+            this.tabWidth = tabWidth;
+            notifyListeners(EntitySetting.TAB_WIDTH);
+        }
+    }
+
+    public double getTabHeight() {
+        return tabHeight;
+    }
+
+    public void setTabHeight(double tabHeight) {
+        if (valuesNotEquals(this.tabHeight, tabHeight)) {
+            this.tabHeight = tabHeight;
+            notifyListeners(EntitySetting.TAB_HEIGHT);
+        }
+    }
+
     public boolean getIncludeInExport() {
         return includeInExport;
     }
@@ -152,6 +189,9 @@ public class CuttableSettingsModel extends TransformSettingsModel {
         setLeadInPercent(0);
         setPasses(1);
         setIncludeInExport(true);
+        setTabCount(0);
+        setTabWidth(AbstractCuttable.DEFAULT_TAB_WIDTH);
+        setTabHeight(AbstractCuttable.DEFAULT_TAB_HEIGHT);
     }
 
     @Override
@@ -190,6 +230,18 @@ public class CuttableSettingsModel extends TransformSettingsModel {
         if (settings.contains(EntitySetting.INCLUDE_IN_EXPORT)) {
             setIncludeInExport(selectionGroup.getIncludeInExport());
         }
+
+        if (settings.contains(EntitySetting.TAB_COUNT)) {
+            setTabCount(selectionGroup.getTabCount());
+        }
+
+        if (settings.contains(EntitySetting.TAB_WIDTH)) {
+            setTabWidth(selectionGroup.getTabWidth());
+        }
+
+        if (settings.contains(EntitySetting.TAB_HEIGHT)) {
+            setTabHeight(selectionGroup.getTabHeight());
+        }
     }
 
     public Object getValueFor(EntitySetting setting) {
@@ -201,6 +253,9 @@ public class CuttableSettingsModel extends TransformSettingsModel {
             case PASSES -> getPasses();
             case FEED_RATE -> getFeedRate();
             case LEAD_IN_PERCENT -> getLeadInPercent();
+            case TAB_COUNT -> getTabCount();
+            case TAB_WIDTH -> getTabWidth();
+            case TAB_HEIGHT -> getTabHeight();
             case INCLUDE_IN_EXPORT -> getIncludeInExport();
             default -> super.getValueFor(setting);
         };
@@ -215,6 +270,9 @@ public class CuttableSettingsModel extends TransformSettingsModel {
             case PASSES -> setPasses((Integer) newValue);
             case FEED_RATE -> setFeedRate((Integer) newValue);
             case LEAD_IN_PERCENT -> setLeadInPercent((Integer) newValue);
+            case TAB_COUNT -> setTabCount(((Number) newValue).intValue());
+            case TAB_WIDTH -> setTabWidth(((Number) newValue).doubleValue());
+            case TAB_HEIGHT -> setTabHeight(((Number) newValue).doubleValue());
             case INCLUDE_IN_EXPORT -> setIncludeInExport((Boolean) newValue);
             default -> super.updateValueFor(setting, newValue);
         }

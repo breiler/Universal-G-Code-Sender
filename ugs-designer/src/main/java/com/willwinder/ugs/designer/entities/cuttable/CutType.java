@@ -23,6 +23,7 @@ import static com.willwinder.ugs.designer.entities.EntitySetting.DEFAULT_ENDMILL
 import static com.willwinder.ugs.designer.entities.EntitySetting.DEFAULT_HEIGHT_MAP_SETTINGS;
 import static com.willwinder.ugs.designer.entities.EntitySetting.DEFAULT_LASER_FILL_SETTINGS;
 import static com.willwinder.ugs.designer.entities.EntitySetting.DEFAULT_LASER_SETTINGS;
+import static com.willwinder.ugs.designer.entities.EntitySetting.DEFAULT_OUTLINE_SETTINGS;
 import static com.willwinder.ugs.designer.entities.EntitySetting.DEFAULT_POCKET_SETTINGS;
 import static com.willwinder.ugs.designer.entities.EntitySetting.DEFAULT_SURFACE_SETTINGS;
 import static com.willwinder.ugs.designer.entities.EntitySetting.DEFAULT_VCARVE_SETTINGS;
@@ -38,9 +39,9 @@ public enum CutType {
     POCKET("Mill - Pocket", DEFAULT_POCKET_SETTINGS, List.of(Direction.CLIMB, Direction.CONVENTIONAL)),
     VCARVE("Mill - V-carve", DEFAULT_VCARVE_SETTINGS, List.of(Direction.CLIMB, Direction.CONVENTIONAL)),
     SURFACE("Mill - Surface", DEFAULT_SURFACE_SETTINGS, List.of(Direction.CLIMB, Direction.CONVENTIONAL, Direction.BOTH)),
-    ON_PATH("Mill - On path", DEFAULT_ENDMILL_SETTINGS, Collections.emptyList()),
-    INSIDE_PATH("Mill - Inside path", DEFAULT_ENDMILL_SETTINGS, Collections.emptyList()),
-    OUTSIDE_PATH("Mill - Outside path", DEFAULT_ENDMILL_SETTINGS, Collections.emptyList()),
+    ON_PATH("Mill - On path", DEFAULT_OUTLINE_SETTINGS, Collections.emptyList()),
+    INSIDE_PATH("Mill - Inside path", DEFAULT_OUTLINE_SETTINGS, Collections.emptyList()),
+    OUTSIDE_PATH("Mill - Outside path", DEFAULT_OUTLINE_SETTINGS, Collections.emptyList()),
     LASER_ON_PATH("Laser - On path", DEFAULT_LASER_SETTINGS, Collections.emptyList()),
     LASER_FILL("Laser - Fill", DEFAULT_LASER_FILL_SETTINGS, Collections.emptyList()),
     LASER_RASTER("Laser - Raster", DEFAULT_LASER_FILL_SETTINGS, Collections.emptyList()),

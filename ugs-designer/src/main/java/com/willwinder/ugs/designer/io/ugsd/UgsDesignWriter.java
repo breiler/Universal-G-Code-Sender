@@ -116,6 +116,9 @@ public class UgsDesignWriter implements DesignWriter {
             cuttableEntity.setPasses(cuttable.getPasses());
             cuttableEntity.setFeedRate(cuttable.getFeedRate());
             cuttableEntity.setLeadInPercent(cuttable.getLeadInPercent());
+            cuttableEntity.setTabCount(cuttable.getTabCount());
+            cuttableEntity.setTabWidth(cuttable.getTabWidth());
+            cuttableEntity.setTabHeight(cuttable.getTabHeight());
             cuttableEntity.setToolPathAngle(cuttable.getToolPathAngle());
             cuttableEntity.setDirection(DirectionTypeV1.fromDirection(cuttable.getDirection()));
             cuttableEntity.setToolPathDirection(ToolPathDirectionTypeV1.fromDirection(cuttable.getToolPathDirection()));
