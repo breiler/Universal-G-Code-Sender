@@ -30,6 +30,7 @@ import com.willwinder.universalgcodesender.model.PartialPosition;
 import com.willwinder.universalgcodesender.model.UnitUtils;
 import org.locationtech.jts.geom.GeometryFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractToolPath implements PathGenerator {
@@ -119,13 +120,56 @@ public abstract class AbstractToolPath implements PathGenerator {
             // Arcs are held to the same precision the geometry was flattened with, so that a single
             // setting describes how far the tool path may stray from the design
             double precision = settings.getFlatnessPrecision();
-            return new ArcFitter(precision, precision).fit(coordinates, feedRate);
+            ArcFitter arcFitter = new ArcFitter(precision, precision);
+            return splitOnDepthChanges(coordinates).stream()
+                    .flatMap(run -> arcFitter.fit(run, feedRate).stream())
+                    .toList();
         }
 
         return coordinates.stream()
                 .skip(1)
                 .map(coordinate -> new Segment(SegmentType.LINE, coordinate, null, null, feedRate))
                 .toList();
+    }
+
+    /**
+     * Splits a run wherever it changes depth, since an arc is cut in the XY plane and a run changing
+     * depth can only be fitted in the parts that stay at the same depth. Each part begins on the
+     * coordinate the previous one ended on, so that the parts together still describe the whole run.
+     */
+    private static List<List<PartialPosition>> splitOnDepthChanges(List<PartialPosition> coordinates) {
+        List<List<PartialPosition>> runs = new ArrayList<>();
+        int startIndex = 0;
+        for (int index = 1; index < coordinates.size(); index++) {
+            if (hasDifferentDepth(coordinates.get(index), coordinates.get(index - 1))) {
+                addRun(runs, coordinates.subList(startIndex, index));
+                startIndex = index - 1;
+            }
+        }
+
+        addRun(runs, coordinates.subList(startIndex, coordinates.size()));
+        return runs;
+    }
+
+    private static void addRun(List<List<PartialPosition>> runs, List<PartialPosition> run) {
+        // A run of a single coordinate describes no movement, the following run starts on it instead
+        if (run.size() > 1) {
+            runs.add(run);
+        }
+    }
+
+    private static boolean hasDifferentDepth(PartialPosition coordinate, PartialPosition other) {
+        if (coordinate.hasZ() != other.hasZ()) {
+            return true;
+        }
+
+        if (!coordinate.hasZ()) {
+            return false;
+        }
+
+        double depth = coordinate.getZ();
+        double otherDepth = other.getZ();
+        return depth != otherDepth;
     }
 
 

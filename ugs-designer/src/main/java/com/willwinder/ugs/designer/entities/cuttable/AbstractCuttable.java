@@ -43,6 +43,9 @@ import java.util.Optional;
  * @author Joacim Breiler
  */
 public abstract class AbstractCuttable extends AbstractEntity implements Cuttable {
+    public static final double DEFAULT_TAB_WIDTH = 6;
+    public static final double DEFAULT_TAB_HEIGHT = 1;
+
     private final CuttableEntitySettings entitySettings;
     private CutType cutType = CutType.NONE;
     private double targetDepth;
@@ -56,6 +59,9 @@ public abstract class AbstractCuttable extends AbstractEntity implements Cuttabl
     private double toolPathAngle;
     private Direction direction = Direction.CLIMB;
     private ToolPathDirection toolPathDirection = ToolPathDirection.HORIZONTAL;
+    private int tabCount;
+    private double tabWidth = DEFAULT_TAB_WIDTH;
+    private double tabHeight = DEFAULT_TAB_HEIGHT;
 
     protected AbstractCuttable() {
         this(0, 0);
@@ -154,6 +160,39 @@ public abstract class AbstractCuttable extends AbstractEntity implements Cuttabl
     }
 
     @Override
+    public void setTabCount(int tabCount) {
+        this.tabCount = Math.max(0, tabCount);
+        notifyEvent(new EntityEvent(this, EventType.SETTINGS_CHANGED));
+    }
+
+    @Override
+    public int getTabCount() {
+        return tabCount;
+    }
+
+    @Override
+    public void setTabWidth(double tabWidth) {
+        this.tabWidth = Math.abs(tabWidth);
+        notifyEvent(new EntityEvent(this, EventType.SETTINGS_CHANGED));
+    }
+
+    @Override
+    public double getTabWidth() {
+        return tabWidth;
+    }
+
+    @Override
+    public void setTabHeight(double tabHeight) {
+        this.tabHeight = Math.abs(tabHeight);
+        notifyEvent(new EntityEvent(this, EventType.SETTINGS_CHANGED));
+    }
+
+    @Override
+    public double getTabHeight() {
+        return tabHeight;
+    }
+
+    @Override
     public boolean isWithin(Point2D point) {
         if (cutType != CutType.SURFACE) {
             return super.isWithin(point);
@@ -201,6 +240,7 @@ public abstract class AbstractCuttable extends AbstractEntity implements Cuttabl
             }
         } else if (getCutType() == CutType.INSIDE_PATH || getCutType() == CutType.ON_PATH || getCutType() == CutType.OUTSIDE_PATH || getCutType() == CutType.HEIGHT_MAP) {
             drawShape(graphics, new BasicStroke(strokeWidth), getCutColor(), shape);
+            drawHoldingTabs(graphics, drawing, shape);
         } else if (getCutType() == CutType.LASER_ON_PATH) {
             drawShape(graphics, new BasicStroke(strokeWidth), getLaserCutColor(), shape);
         } else if (getCutType() == CutType.LASER_FILL) {
@@ -218,6 +258,17 @@ public abstract class AbstractCuttable extends AbstractEntity implements Cuttabl
         } else {
             drawShape(graphics, dashedStroke, Colors.SHAPE_OUTLINE, shape);
         }
+    }
+
+    private void drawHoldingTabs(Graphics2D graphics, Drawing drawing, Shape shape) {
+        HoldingTabs tabs = new HoldingTabs(getTabCount(), getTabWidth(), getTabHeight());
+        if (!tabs.isEnabled() || !getCutType().getSettings().contains(EntitySetting.TAB_COUNT)) {
+            return;
+        }
+
+        graphics.setStroke(new BasicStroke(4f / (float) drawing.getScale(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+        graphics.setColor(Colors.HOLDING_TAB);
+        graphics.draw(HoldingTabMarks.create(shape, tabs));
     }
 
     private void drawArrow(Drawing drawing, Graphics2D g, double cx, double cy, double angleDeg, double length) {
@@ -319,6 +370,9 @@ public abstract class AbstractCuttable extends AbstractEntity implements Cuttabl
                 EntitySetting.LEAD_IN_PERCENT,
                 EntitySetting.TOOL_PATH_ANGLE,
                 EntitySetting.DIRECTION,
+                EntitySetting.TAB_COUNT,
+                EntitySetting.TAB_WIDTH,
+                EntitySetting.TAB_HEIGHT,
                 EntitySetting.INCLUDE_IN_EXPORT
         );
     }
@@ -358,6 +412,9 @@ public abstract class AbstractCuttable extends AbstractEntity implements Cuttabl
         copy.setIncludeInExport(getIncludeInExport());
         copy.setDirection(getDirection());
         copy.setToolPathAngle(getToolPathAngle());
+        copy.setTabCount(getTabCount());
+        copy.setTabWidth(getTabWidth());
+        copy.setTabHeight(getTabHeight());
     }
 
     @Override

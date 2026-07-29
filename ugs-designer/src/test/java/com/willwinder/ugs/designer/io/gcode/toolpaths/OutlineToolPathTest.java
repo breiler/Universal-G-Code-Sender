@@ -20,15 +20,19 @@ package com.willwinder.ugs.designer.io.gcode.toolpaths;
 
 import com.willwinder.ugs.designer.entities.cuttable.Cuttable;
 import com.willwinder.ugs.designer.entities.cuttable.Ellipse;
+import com.willwinder.ugs.designer.entities.cuttable.Path;
 import com.willwinder.ugs.designer.entities.cuttable.Rectangle;
 import com.willwinder.ugs.designer.io.gcode.path.GcodePath;
 import com.willwinder.ugs.designer.io.gcode.path.Segment;
 import com.willwinder.ugs.designer.io.gcode.path.SegmentType;
 import com.willwinder.ugs.designer.model.Settings;
 import com.willwinder.ugs.designer.model.Size;
+import com.willwinder.universalgcodesender.model.PartialPosition;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.List;
 
 public class OutlineToolPathTest {
@@ -648,9 +652,159 @@ public class OutlineToolPathTest {
         assertTrue(gcodePath.getSegments().stream().noneMatch(s -> s.getType().isArc()));
     }
 
+    @Test
+    public void toGcodePath_shouldLiftTheToolOntoTheHoldingTabs() {
+        Rectangle rectangle = rectangleWithTabs(40, 6, 1);
+
+        GcodePath gcodePath = singlePassOutlineOf(rectangle, new Settings(), 3);
+
+        List<Double> depths = cuttingDepthsOf(gcodePath);
+        assertEquals("Expected the tool to be lifted onto the tabs", -2, maximumOf(depths), 0.01);
+        assertEquals("Expected the tool to reach the full depth between the tabs", -3, minimumOf(depths), 0.01);
+    }
+
+    @Test
+    public void toGcodePath_shouldRampOntoTheHoldingTabs() {
+        Rectangle rectangle = rectangleWithTabs(40, 6, 1);
+
+        List<Double> ramps = rampLengthsIn(singlePassOutlineOf(rectangle, new Settings(), 3));
+
+        assertEquals("Expected a ramp up and a ramp down at each of the four tabs", 8, ramps.size());
+        assertTrue("Expected the tool to ramp onto the tabs over a distance as long as they are tall",
+                ramps.stream().allMatch(length -> Math.abs(length - 1) < 0.01));
+    }
+
+    @Test
+    public void toGcodePath_shouldKeepTheFullDepthWithoutAnyHoldingTabs() {
+        Rectangle rectangle = new Rectangle(0, 0);
+        rectangle.setSize(new Size(40, 40));
+
+        GcodePath gcodePath = singlePassOutlineOf(rectangle, new Settings(), 3);
+
+        assertTrue(cuttingDepthsOf(gcodePath).stream().allMatch(depth -> depth == -3));
+    }
+
+    @Test
+    public void toGcodePath_shouldLeaveTheTabTopAtTheSurfaceWhenTheTabIsTallerThanTheCut() {
+        Rectangle rectangle = rectangleWithTabs(40, 6, 10);
+
+        GcodePath gcodePath = singlePassOutlineOf(rectangle, new Settings(), 3);
+
+        assertEquals(0, maximumOf(cuttingDepthsOf(gcodePath)), 0.01);
+    }
+
+    @Test
+    public void toGcodePath_shouldNotAddHoldingTabsToAnOpenPath() {
+        Path path = new Path();
+        path.moveTo(0, 0);
+        path.lineTo(40, 0);
+        path.setTabCount(4);
+        path.setTabWidth(6);
+        path.setTabHeight(1);
+
+        GcodePath gcodePath = singlePassOutlineOf(path, new Settings(), 3);
+
+        assertTrue(cuttingDepthsOf(gcodePath).stream().allMatch(depth -> depth == -3));
+    }
+
+    @Test
+    public void toGcodePath_shouldNotAddHoldingTabsWhenTheOutlineIsTooShortForThem() {
+        Rectangle rectangle = rectangleWithTabs(1, 6, 1);
+
+        GcodePath gcodePath = singlePassOutlineOf(rectangle, new Settings(), 3);
+
+        assertTrue(cuttingDepthsOf(gcodePath).stream().allMatch(depth -> depth == -3));
+    }
+
+    @Test
+    public void toGcodePath_shouldStillFitArcsBetweenTheHoldingTabs() {
+        Ellipse circle = new Ellipse(0, 0, 40, 40);
+        circle.setTabCount(4);
+        circle.setTabWidth(6);
+        circle.setTabHeight(1);
+        Settings settings = new Settings();
+        settings.setArcFitting(true);
+
+        GcodePath gcodePath = singlePassOutlineOf(circle, settings, 3);
+
+        List<Segment> arcs = gcodePath.getSegments().stream().filter(s -> s.getType().isArc()).toList();
+        assertFalse("Expected the parts of the circle between the tabs to be fitted as arcs", arcs.isEmpty());
+        assertEquals("Expected the tool to be lifted onto the tabs", -2, maximumOf(cuttingDepthsOf(gcodePath)), 0.01);
+    }
+
+    @Test
+    public void toGcodePath_shouldStartTheOutlineAwayFromTheHoldingTabs() {
+        Rectangle rectangle = rectangleWithTabs(40, 6, 1);
+
+        GcodePath gcodePath = singlePassOutlineOf(rectangle, new Settings(), 3);
+
+        Segment plunge = gcodePath.getSegments().stream()
+                .filter(segment -> segment.type == SegmentType.POINT)
+                .findFirst()
+                .orElseThrow();
+        assertEquals(-3, plunge.point.getZ(), 0.01);
+    }
+
+    private static Rectangle rectangleWithTabs(double size, double tabWidth, double tabHeight) {
+        Rectangle rectangle = new Rectangle(0, 0);
+        rectangle.setSize(new Size(size, size));
+        rectangle.setTabCount(4);
+        rectangle.setTabWidth(tabWidth);
+        rectangle.setTabHeight(tabHeight);
+        return rectangle;
+    }
+
+    private static List<Segment> cuttingSegmentsOf(GcodePath gcodePath) {
+        return gcodePath.getSegments().stream()
+                .filter(segment -> segment.type != SegmentType.MOVE && segment.type != SegmentType.SEAM)
+                .toList();
+    }
+
+    private static List<Double> cuttingDepthsOf(GcodePath gcodePath) {
+        return cuttingSegmentsOf(gcodePath).stream()
+                .map(segment -> segment.point.getZ())
+                .toList();
+    }
+
+    /**
+     * The distance travelled in the XY-plane by every move that changes depth, which is the length of
+     * the ramps going on and off the tabs.
+     */
+    private static List<Double> rampLengthsIn(GcodePath gcodePath) {
+        List<Segment> cuts = cuttingSegmentsOf(gcodePath);
+        List<Double> rampLengths = new ArrayList<>();
+        for (int index = 1; index < cuts.size(); index++) {
+            PartialPosition from = cuts.get(index - 1).point;
+            PartialPosition to = cuts.get(index).point;
+            if (!from.getZ().equals(to.getZ())) {
+                rampLengths.add(Point2D.distance(from.getX(), from.getY(), to.getX(), to.getY()));
+            }
+        }
+        return rampLengths;
+    }
+
+    private static double maximumOf(List<Double> depths) {
+        return depths.stream().mapToDouble(Double::doubleValue).max().orElseThrow();
+    }
+
+    private static double minimumOf(List<Double> depths) {
+        return depths.stream().mapToDouble(Double::doubleValue).min().orElseThrow();
+    }
+
     private static GcodePath outlineOf(Cuttable source, Settings settings) {
         OutlineToolPath toolPath = new OutlineToolPath(settings, source);
         toolPath.setTargetDepth(1);
+        return toolPath.toGcodePath();
+    }
+
+    /**
+     * Cuts the outline in a single pass, so that the coordinates of the tool path are those of the
+     * pass reaching the target depth.
+     */
+    private static GcodePath singlePassOutlineOf(Cuttable source, Settings settings, double targetDepth) {
+        OutlineToolPath toolPath = new OutlineToolPath(settings, source);
+        toolPath.setStartDepth(targetDepth);
+        toolPath.setTargetDepth(targetDepth);
         return toolPath.toGcodePath();
     }
 }
