@@ -16,8 +16,9 @@
     <url>https://github.com/winder/Universal-G-Code-Sender/tree/master/ugs-fx</url>
 
     <properties>
-        <javafx.version>20.0.2</javafx.version>
+        <javafx.version>25.0.4</javafx.version>
         <exec.maven.plugin.version>3.5.0</exec.maven.plugin.version>
+        <vulkan4j.version>0.4.4</vulkan4j.version>
     </properties>
 
     <dependencies>
@@ -73,7 +74,7 @@
         <dependency>
             <groupId>org.fxmisc.richtext</groupId>
             <artifactId>richtextfx</artifactId>
-            <version>0.11.5</version>
+            <version>0.11.7</version>
         </dependency>
 
         <!-- CSG graphics -->
@@ -109,10 +110,11 @@
             <version>3.5.4</version>
         </dependency>
 
+        <!-- Vulkan bindings for the experimental Vulkan visualizer -->
         <dependency>
-            <groupId>org.fxyz3d</groupId>
-            <artifactId>fxyz3d</artifactId>
-            <version>0.6.0</version>
+            <groupId>club.doki7</groupId>
+            <artifactId>vulkan</artifactId>
+            <version>${vulkan4j.version}</version>
         </dependency>
 
         <!-- For scripting -->

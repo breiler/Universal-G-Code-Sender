@@ -22,6 +22,7 @@ import com.willwinder.ugs.designer.entities.cuttable.CutType;
 import com.willwinder.ugs.designer.entities.cuttable.Cuttable;
 import com.willwinder.ugs.designer.logic.Controller;
 import com.willwinder.ugs.designer.logic.ControllerFactory;
+import com.willwinder.ugs.designer.model.toollibrary.ToolDefinition;
 import com.willwinder.universalgcodesender.Utils;
 import com.willwinder.universalgcodesender.fx.helper.SvgLoader;
 import com.willwinder.universalgcodesender.fx.model.UgsdWorkspaceContext;
@@ -36,7 +37,7 @@ import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
 /**
- * Overlay button in the {@link Visualizer} that shows the current designer tool (mill diameter, or
+ * Overlay button in the {@link VisualizerPane} that shows the current designer tool (mill diameter, or
  * "Laser"/"Mixed") and opens the {@link ToolSettingsStage} when clicked. Only visible while a
  * design workspace is active. Mirrors the Swing {@code ToolButton}.
  */
@@ -55,7 +56,7 @@ public class ToolButton extends Button {
         setOnAction(e -> openToolSettings());
 
         controller.getSettings().addListener(this::updateText);
-        controller.getDrawing().getRootEntity().addListener(e -> updateText());
+        controller.getModel().getRootEntity().addListener(e -> updateText());
         bindDesignVisibility();
         updateText();
     }
@@ -66,15 +67,15 @@ public class ToolButton extends Button {
 
     private void updateText() {
         Platform.runLater(() -> {
-            boolean hasLaser = controller.getDrawing().getEntities().stream()
+            boolean hasLaser = controller.getModel().getEntities().stream()
                     .filter(Cuttable.class::isInstance)
                     .map(Cuttable.class::cast)
                     .anyMatch(ToolButton::isLaserOperation);
-            boolean hasMill = controller.getDrawing().getEntities().stream()
+            boolean hasMill = controller.getModel().getEntities().stream()
                     .filter(Cuttable.class::isInstance)
                     .map(Cuttable.class::cast)
                     .anyMatch(ToolButton::isMillOperation);
-            boolean hasPlotter = controller.getDrawing().getEntities().stream()
+            boolean hasPlotter = controller.getModel().getEntities().stream()
                     .filter(Cuttable.class::isInstance)
                     .map(Cuttable.class::cast)
                     .anyMatch(ToolButton::isPlotterOperation);
@@ -100,6 +101,10 @@ public class ToolButton extends Button {
     }
 
     private String getMillToolDescription() {
+        ToolDefinition libraryTool = controller.getSettings().getCurrentToolSnapshot();
+        if (libraryTool != null && libraryTool.getName() != null && !libraryTool.getName().isBlank()) {
+            return libraryTool.getName();
+        }
         double scale = UnitUtils.scaleUnits(UnitUtils.Units.MM, controller.getSettings().getPreferredUnits());
         return Utils.formatter.format(controller.getSettings().getToolDiameter() * scale)
                 + " " + controller.getSettings().getPreferredUnits().abbreviation;

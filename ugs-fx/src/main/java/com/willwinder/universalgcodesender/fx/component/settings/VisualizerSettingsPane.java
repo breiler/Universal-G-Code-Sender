@@ -22,17 +22,14 @@ import com.willwinder.universalgcodesender.fx.component.BorderedTitledPane;
 import com.willwinder.universalgcodesender.fx.component.SettingsRow;
 import com.willwinder.universalgcodesender.fx.component.visualizer.machine.MachineType;
 import com.willwinder.universalgcodesender.fx.control.SwitchButton;
-import com.willwinder.universalgcodesender.fx.control.UnitTextField;
 import com.willwinder.universalgcodesender.fx.helper.Colors;
 import com.willwinder.universalgcodesender.fx.settings.VisualizerSettings;
+import com.willwinder.universalgcodesender.fx.stage.StockSettingsStage;
 import com.willwinder.universalgcodesender.i18n.Localization;
-import com.willwinder.universalgcodesender.model.Unit;
-import com.willwinder.universalgcodesender.model.UnitValue;
-import javafx.beans.property.FloatProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -54,6 +51,7 @@ public class VisualizerSettingsPane extends BorderPane {
         addCameraSettings();
         addColorSettings();
         addRulerSettings();
+        addStockSettings();
         addDesignSettings();
         setCenter(settingsGroup);
     }
@@ -80,7 +78,6 @@ public class VisualizerSettingsPane extends BorderPane {
         settingsGroup.getChildren().add(new BorderedTitledPane(Localization.getString("platform.visualizer.gcodeModel"),
                 new VBox(10,
                         new SettingsRow(Localization.getString("platform.visualizer.model"), showGcode),
-                        createFloatSetting(Localization.getString("platform.visualizer.gcodeModel.lineWidth"), VisualizerSettings.getInstance().lineWidthProperty()),
                         createColorSetting(Localization.getString("platform.visualizer.color.background"), VisualizerSettings.getInstance().colorBackgroundProperty()),
                         createColorSetting(Localization.getString("platform.visualizer.color.rapid"), VisualizerSettings.getInstance().colorRapidProperty()),
                         createColorSetting(Localization.getString("platform.visualizer.color.linear.min.speed"), VisualizerSettings.getInstance().colorFeedMinProperty()),
@@ -90,6 +87,21 @@ public class VisualizerSettingsPane extends BorderPane {
                         createColorSetting(Localization.getString("platform.visualizer.color.arc"), VisualizerSettings.getInstance().colorArcProperty()),
                         createColorSetting(Localization.getString("platform.visualizer.color.completed"), VisualizerSettings.getInstance().colorCompletedProperty()),
                         createColorSetting(Localization.getString("platform.visualizer.color.plunge"), VisualizerSettings.getInstance().colorPlungeProperty())
+                )
+        ));
+    }
+
+    private void addStockSettings() {
+        SwitchButton showStock = new SwitchButton();
+        showStock.selectedProperty().bindBidirectional(VisualizerSettings.getInstance().showStockProperty());
+        Button stockSize = new Button("Stock size…");
+        stockSize.setOnAction(event -> new StockSettingsStage(getScene() == null ? null : getScene().getWindow()).showAndWait());
+        settingsGroup.getChildren().add(new BorderedTitledPane("Stock",
+                new VBox(10,
+                        new SettingsRow(Localization.getString("platform.visualizer.stock"), Localization.getString("platform.visualizer.stock.desc"), showStock),
+                        createColorSetting("Stock color", VisualizerSettings.getInstance().colorStockProperty()),
+                        createColorSetting("Deep cut color", VisualizerSettings.getInstance().colorStockDeepProperty()),
+                        new SettingsRow("Stock size", "Whether the block is derived from the program or given by hand.", stockSize)
                 )
         ));
     }
@@ -164,11 +176,5 @@ public class VisualizerSettingsPane extends BorderPane {
         });
         colorPicker.setMinHeight(28);
         return new SettingsRow(text, colorPicker);
-    }
-
-    private Node createFloatSetting(String text, FloatProperty floatProperty) {
-        UnitTextField unitTextField = new UnitTextField(new UnitValue(Unit.MM, floatProperty.getValue()), Unit.MM);
-        unitTextField.unitValueProperty().addListener((observable, oldValue, newValue) -> floatProperty.set(newValue.convertTo(Unit.MM).floatValue()));
-        return new SettingsRow(text, unitTextField);
     }
 }

@@ -13,21 +13,22 @@ if [ -z ${PROJECT_VERSION} ]; then echo "Missing PROJECT_VERSION"; exit 1; fi
 if [ -z ${APP_VERSION} ]; then echo "Missing APP_VERSION"; exit 1; fi
 
 # Download JVM
-JVM=zulu21.42.19-ca-fx-jdk21.0.7-macosx_x64
+JVM=zulu25.36.205-ca-fx-jdk25.0.4.1-macosx_x64
 set -e
 ZIP=$JVM.tar.gz
-export JAVA_HOME=.jdks/$JVM
-if test -d $JAVA_HOME/$JVM/; then
+JDK_DIR=.jdks/$JVM
+# The macOS archives are application bundles with the JDK inside Contents/Home
+export JAVA_HOME=$JDK_DIR/Contents/Home
+if test -x $JAVA_HOME/bin/jdeps; then
   echo "Using existing JDK from $JAVA_HOME"
 else
-	rm -rf $JAVA_HOME
-	mkdir -p $JAVA_HOME
+	rm -rf $JDK_DIR
+	mkdir -p $JDK_DIR
 	curl -o $ZIP https://cdn.azul.com/zulu/bin/$ZIP
-	tar -xvzf $ZIP -C $JAVA_HOME
-	mv $JAVA_HOME/$JVM/* $JAVA_HOME/
+	tar -xvzf $ZIP -C $JDK_DIR --strip-components=1
 fi
 
-JAVA_VERSION=17
+JAVA_VERSION=25
 MAIN_JAR="ugs-fx-$PROJECT_VERSION.jar"
 
 echo "Java home: $JAVA_HOME"
@@ -92,6 +93,30 @@ $JAVA_HOME/bin/jlink \
   --include-locales=en,de \
   --output target/java-runtime
 
+# ------ MOLTENVK -----------------------------------------------------------
+# macOS has no native Vulkan driver, so the Vulkan visualizer reaches Vulkan
+# through MoltenVK, which translates it to Metal. The dylib is bundled into the
+# application directory and pointed at with ugs.vulkan.library below. The
+# released dylib is a universal binary, so the same file serves both the x64
+# and the aarch64 build.
+
+MOLTENVK_VERSION=1.4.2
+MOLTENVK_TAR=MoltenVK-macos-${MOLTENVK_VERSION}.tar
+if test -f $MOLTENVK_TAR; then
+  echo "Using existing MoltenVK ${MOLTENVK_VERSION}"
+else
+  echo "Downloading MoltenVK ${MOLTENVK_VERSION}"
+  curl -fLo $MOLTENVK_TAR https://github.com/KhronosGroup/MoltenVK/releases/download/v${MOLTENVK_VERSION}/MoltenVK-macos.tar
+fi
+
+rm -rfd target/moltenvk/
+mkdir -p target/moltenvk
+tar -xf $MOLTENVK_TAR -C target/moltenvk \
+  MoltenVK/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib \
+  MoltenVK/LICENSE
+cp target/moltenvk/MoltenVK/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib target/installer/input/libs/
+cp target/moltenvk/MoltenVK/LICENSE target/installer/input/libs/LICENSE-MoltenVK
+
 # ------ PACKAGING ----------------------------------------------------------
 # In the end we will find the package inside the target/installer directory.
 
@@ -103,7 +128,7 @@ $JAVA_HOME/bin/jpackage \
   --main-class com.willwinder.universalgcodesender.fx.Main \
   --main-jar ${MAIN_JAR} \
   --resource-dir installer \
-  --java-options "-XX:MaxRAMPercentage=85.0 -Dprism.forceGPU=true -Djavafx.autoproxy.disable=true -Djavafx.preloader=com.willwinder.universalgcodesender.fx.Preloader"  \
+  --java-options "--enable-native-access=ALL-UNNAMED -Dugs.vulkan.library=\$APPDIR/libMoltenVK.dylib -XX:MaxRAMPercentage=85.0 -Dprism.forceGPU=true -Djavafx.autoproxy.disable=true -Djavafx.preloader=com.willwinder.universalgcodesender.fx.Preloader"  \
   --runtime-image target/java-runtime \
   --app-version ${APP_VERSION} \
   --copyright "Joacim Breiler" \

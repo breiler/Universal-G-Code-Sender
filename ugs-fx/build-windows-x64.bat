@@ -14,7 +14,7 @@ if "%APP_VERSION%"=="" (
 )
 
 :: ----------- DOWNLOAD JVM ------------------------------------------------
-set JVM=zulu21.42.19-ca-fx-jdk21.0.7-win_x64
+set JVM=zulu25.36.205-ca-fx-jdk25.0.4.1-win_x64
 set ZIP=%JVM%.zip
 set JAVA_HOME=.jdks\%JVM%
 
@@ -26,7 +26,7 @@ if exist "%JAVA_HOME%\" (
     powershell -Command "Expand-Archive -Force '%ZIP%' '.jdks'"
 )
 
-set JAVA_VERSION=17
+set JAVA_VERSION=25
 set MAIN_JAR=ugs-fx-%PROJECT_VERSION%.jar
 
 echo Java home: %JAVA_HOME%
@@ -76,7 +76,7 @@ for %%s in ("msi" "exe") do call "%JAVA_HOME%\bin\jpackage" ^
   --main-class com.willwinder.universalgcodesender.fx.Launcher ^
   --main-jar %MAIN_JAR% ^
   --resource-dir installer ^
-  --java-options "-XX:MaxRAMPercentage=85.0 -Dprism.forceGPU=true -Djavafx.preloader=com.willwinder.universalgcodesender.fx.Preloader" ^
+  --java-options "--enable-native-access=ALL-UNNAMED -XX:MaxRAMPercentage=85.0 -Dprism.forceGPU=true -Djavafx.preloader=com.willwinder.universalgcodesender.fx.Preloader" ^
   --runtime-image target\java-runtime ^
   --icon installer\ugs.ico ^
   --app-version %APP_VERSION% ^

@@ -20,7 +20,7 @@ package com.willwinder.ugs.designer.io.ugsd;
 
 import com.willwinder.ugs.designer.entities.EntityGroup;
 import com.willwinder.ugs.designer.entities.cuttable.Rectangle;
-import com.willwinder.ugs.designer.gui.Drawing;
+import com.willwinder.ugs.designer.logic.DesignModel;
 import com.willwinder.ugs.designer.logic.Controller;
 import com.willwinder.ugs.designer.model.CoolantMode;
 import com.willwinder.ugs.designer.model.Design;
@@ -53,7 +53,7 @@ public class UgsDesignWriterTest {
     private Controller controller;
 
     @Mock
-    private Drawing drawing;
+    private DesignModel model;
 
     @Before
     public void setUp() {
@@ -71,7 +71,6 @@ public class UgsDesignWriterTest {
         assertEquals(321, writtenSettings.getPlungeSpeed());
         assertEquals(6.5, writtenSettings.getToolDiameter(), 0.1);
         assertEquals(EndmillShape.V_BIT, writtenSettings.getToolShape());
-        assertEquals(22.5, writtenSettings.getStockThickness(), 0.1);
         assertEquals(12.5, writtenSettings.getSafeHeight(), 0.1);
         assertEquals(UnitUtils.Units.INCH, writtenSettings.getPreferredUnits());
         assertEquals(0.75, writtenSettings.getToolStepOver(), 0.1);
@@ -105,10 +104,10 @@ public class UgsDesignWriterTest {
 
     private Design writeAndRead(Settings settings) {
         when(controller.getSettings()).thenReturn(settings);
-        when(controller.getDrawing()).thenReturn(drawing);
+        when(controller.getModel()).thenReturn(model);
         EntityGroup rootEntity = new EntityGroup();
         rootEntity.addChild(new Rectangle());
-        when(drawing.getRootEntity()).thenReturn(rootEntity);
+        when(model.getRootEntity()).thenReturn(rootEntity);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         new UgsDesignWriter().write(outputStream, controller);
@@ -124,7 +123,6 @@ public class UgsDesignWriterTest {
         settings.setPlungeSpeed(321);
         settings.setToolDiameter(6.5);
         settings.setToolShape(EndmillShape.V_BIT);
-        settings.setStockThickness(22.5);
         settings.setSafeHeight(12.5);
         settings.setPreferredUnits(UnitUtils.Units.INCH);
         settings.setToolStepOver(0.75);

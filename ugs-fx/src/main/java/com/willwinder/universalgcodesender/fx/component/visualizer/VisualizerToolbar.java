@@ -24,6 +24,7 @@ import com.willwinder.universalgcodesender.fx.actions.ToggleGcodeModelAction;
 import com.willwinder.universalgcodesender.fx.actions.ToggleGridAction;
 import com.willwinder.universalgcodesender.fx.actions.ToggleMachineVisualizationAction;
 import com.willwinder.universalgcodesender.fx.actions.ToggleRulerAction;
+import com.willwinder.universalgcodesender.fx.actions.ToggleStockAction;
 import com.willwinder.universalgcodesender.fx.actions.ToggleToolAction;
 import com.willwinder.universalgcodesender.fx.control.ToggleActionButton;
 import com.willwinder.universalgcodesender.fx.model.UgsdWorkspaceContext;
@@ -36,7 +37,7 @@ import javafx.scene.paint.Color;
 
 /**
  * A horizontal row of the visualizer feature toggles shown in the top-right corner of the
- * {@link Visualizer}: G-code model, grid, axes, ruler and machine visibility.
+ * {@link VisualizerPane}: G-code model, grid, axes, ruler and machine visibility.
  */
 public class VisualizerToolbar extends HBox {
     static final int BUTTON_SIZE = 24;
@@ -52,6 +53,7 @@ public class VisualizerToolbar extends HBox {
         getChildren().addAll(
                 designButton,
                 styleButton(new ToggleActionButton(new ToggleGcodeModelAction(), BUTTON_SIZE, false, Color.WHITE)),
+                styleButton(new ToggleActionButton(new ToggleStockAction(), BUTTON_SIZE, false, Color.WHITE)),
                 styleButton(new ToggleActionButton(new ToggleGridAction(), BUTTON_SIZE, false, Color.WHITE)),
                 styleButton(new ToggleActionButton(new ToggleAxesAction(), BUTTON_SIZE, false, Color.WHITE)),
                 styleButton(new ToggleActionButton(new ToggleRulerAction(), BUTTON_SIZE, false, Color.WHITE)),

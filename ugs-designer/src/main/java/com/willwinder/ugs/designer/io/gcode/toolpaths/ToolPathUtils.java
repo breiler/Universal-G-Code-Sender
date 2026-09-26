@@ -33,7 +33,12 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.locationtech.jts.operation.polygonize.Polygonizer;
+import org.locationtech.jts.geom.util.GeometryFixer;
+import org.locationtech.jts.geom.util.PolygonExtracter;
+import org.locationtech.jts.operation.overlayng.OverlayNGRobust;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 
 import java.awt.Shape;
@@ -94,24 +99,145 @@ public class ToolPathUtils {
                 .toList();
     }
 
+    /**
+     * Converts the area to polygons with the same holes and islands. The rings of an area bound
+     * its material by the even-odd rule: a ring inside another ring is a hole, a ring inside a hole
+     * is an island. Each ring is classified by how many rings enclose it, which keeps the rings'
+     * own vertices and direction so the tool paths follow them as drawn. A ring that the
+     * flattening left self intersecting is repaired first, or it would corrupt the classification.
+     */
     public static Geometry convertAreaToGeometry(final Area area, final GeometryFactory factory, double flatnessPrecision) {
-
         PathIterator iter = area.getPathIterator(null, flatnessPrecision);
-
         PrecisionModel precisionModel = factory.getPrecisionModel();
-        Polygonizer polygonizer = new Polygonizer(true);
 
         List<Coordinate[]> coords = ShapeReader.toCoordinates(iter);
-        List<Geometry> geometries = new ArrayList<>();
+        List<Polygon> rings = new ArrayList<>();
         for (Coordinate[] array : coords) {
-            for (Coordinate c : array)
+            for (Coordinate c : array) {
                 precisionModel.makePrecise(c);
-
-            LineString lineString = factory.createLineString(array);
-            geometries.add(lineString);
+            }
+            if (array.length < 4) {
+                continue;
+            }
+            Polygon ring = factory.createPolygon(array);
+            if (ring.isValid()) {
+                rings.add(ring);
+            } else {
+                rings.addAll(ringsOf(GeometryFixer.fix(ring), factory));
+            }
         }
-        polygonizer.add(factory.buildGeometry(geometries).union());
-        return polygonizer.getGeometry();
+        return assembleByNesting(rings, factory);
+    }
+
+    /**
+     * The rings of a repaired ring, each as a polygon of its own; repairing a ring that crosses
+     * itself splits it into the loops it was made of.
+     */
+    private static List<Polygon> ringsOf(Geometry repaired, GeometryFactory factory) {
+        List<Polygon> rings = new ArrayList<>();
+        for (Object part : PolygonExtracter.getPolygons(repaired)) {
+            Polygon polygon = (Polygon) part;
+            rings.add(factory.createPolygon(polygon.getExteriorRing().getCoordinates()));
+            for (int i = 0; i < polygon.getNumInteriorRing(); i++) {
+                rings.add(factory.createPolygon(polygon.getInteriorRingN(i).getCoordinates()));
+            }
+        }
+        return rings;
+    }
+
+    private static Geometry assembleByNesting(List<Polygon> rings, GeometryFactory factory) {
+        List<PreparedGeometry> prepared = rings.stream().map(PreparedGeometryFactory::prepare).toList();
+        List<Point> interiorPoints = rings.stream().map(Polygon::getInteriorPoint).toList();
+
+        // The rings enclosing each ring, innermost last; a ring at even depth is a shell.
+        int[] depth = new int[rings.size()];
+        int[] parent = new int[rings.size()];
+        Arrays.fill(parent, -1);
+        for (int i = 0; i < rings.size(); i++) {
+            double parentArea = Double.MAX_VALUE;
+            for (int j = 0; j < rings.size(); j++) {
+                if (i != j && rings.get(j).getArea() > rings.get(i).getArea() && prepared.get(j).contains(interiorPoints.get(i))) {
+                    depth[i]++;
+                    if (rings.get(j).getArea() < parentArea) {
+                        parentArea = rings.get(j).getArea();
+                        parent[i] = j;
+                    }
+                }
+            }
+        }
+
+        List<List<LinearRing>> holesOfShell = new ArrayList<>();
+        for (int i = 0; i < rings.size(); i++) {
+            holesOfShell.add(new ArrayList<>());
+        }
+        for (int i = 0; i < rings.size(); i++) {
+            if (depth[i] % 2 == 1) {
+                holesOfShell.get(parent[i]).add(rings.get(i).getExteriorRing());
+            }
+        }
+
+        List<Polygon> polygons = new ArrayList<>();
+        for (int i = 0; i < rings.size(); i++) {
+            if (depth[i] % 2 == 0) {
+                polygons.add(factory.createPolygon(rings.get(i).getExteriorRing(), holesOfShell.get(i).toArray(new LinearRing[0])));
+            }
+        }
+        List<Geometry> merged = dissolveSeams(polygons, factory);
+        return merged.size() == 1 ? merged.get(0) : factory.buildGeometry(merged);
+    }
+
+    /**
+     * An area emits a region whose outline meets itself as several rings sharing an edge, split
+     * along horizontal seams. Cut as separate pockets those seams would be left standing, so the
+     * polygons sharing an edge are unioned back into one. Polygons that only meet at a point or
+     * not at all are left as they are.
+     */
+    private static List<Geometry> dissolveSeams(List<Polygon> polygons, GeometryFactory factory) {
+        int[] group = new int[polygons.size()];
+        Arrays.fill(group, -1);
+        int groups = 0;
+        for (int i = 0; i < polygons.size(); i++) {
+            if (group[i] < 0) {
+                group[i] = groups++;
+            }
+            for (int j = i + 1; j < polygons.size(); j++) {
+                if (sharesAnEdge(polygons.get(i), polygons.get(j))) {
+                    if (group[j] < 0) {
+                        group[j] = group[i];
+                    } else if (group[j] != group[i]) {
+                        int from = group[j];
+                        for (int k = 0; k < group.length; k++) {
+                            if (group[k] == from) {
+                                group[k] = group[i];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        List<Geometry> result = new ArrayList<>();
+        for (int g = 0; g < groups; g++) {
+            List<Geometry> members = new ArrayList<>();
+            for (int i = 0; i < polygons.size(); i++) {
+                if (group[i] == g) {
+                    members.add(polygons.get(i));
+                }
+            }
+            if (members.size() == 1) {
+                result.add(members.get(0));
+            } else if (members.size() > 1) {
+                Geometry union = OverlayNGRobust.union(factory.buildGeometry(members));
+                for (int i = 0; i < union.getNumGeometries(); i++) {
+                    result.add(union.getGeometryN(i));
+                }
+            }
+        }
+        return result;
+    }
+
+    private static boolean sharesAnEdge(Polygon a, Polygon b) {
+        return a.getEnvelopeInternal().intersects(b.getEnvelopeInternal()) && a.relate(b, "****1****");
     }
 
     public static List<Geometry> convertShapeToGeometry(Shape shape, GeometryFactory factory, double flatnessPrecision) {

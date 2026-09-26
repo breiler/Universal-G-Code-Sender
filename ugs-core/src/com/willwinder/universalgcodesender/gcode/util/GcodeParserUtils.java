@@ -164,6 +164,7 @@ public class GcodeParserUtils {
                 if (meta.point != null) {
                     meta.point.setFeedRate(state.feedRate);
                     meta.point.setSpindleSpeed(state.spindleSpeed);
+                    meta.point.setToolNumber(state.toolNumber);
                 }
                 results.add(meta);
             }
@@ -395,6 +396,10 @@ public class GcodeParserUtils {
      * Common logic in processAndExport* methods.
      */
     private static void preprocessAndWrite(GcodeParser gcp, IGcodeWriter gsw, String command, String comment, int idx) throws GcodeParserException {
+        // Lets a caller abandon a long preprocessing run by interrupting its thread.
+        if (Thread.currentThread().isInterrupted()) {
+            throw new GcodeParserException("Preprocessing was interrupted");
+        }
         if (idx % 100000 == 0) {
             LOGGER.log(Level.FINE, "gcode processing line: " + idx);
         }

@@ -13,7 +13,7 @@ if [ -z ${PROJECT_VERSION} ]; then echo "Missing PROJECT_VERSION"; exit 1; fi
 if [ -z ${APP_VERSION} ]; then echo "Missing APP_VERSION"; exit 1; fi
 
 # Download JVM
-JVM=zulu21.48.17-ca-fx-jdk21.0.10-linux_x64
+JVM=zulu25.36.205-ca-fx-jdk25.0.4.1-linux_x64
 set -e
 ZIP=$JVM.tar.gz
 export JAVA_HOME=.jdks/$JVM
@@ -27,7 +27,7 @@ else
 	mv $JAVA_HOME/$JVM/* $JAVA_HOME/
 fi
 
-JAVA_VERSION=17
+JAVA_VERSION=25
 MAIN_JAR="ugs-fx-$PROJECT_VERSION.jar"
 
 echo "Java home: $JAVA_HOME"
@@ -104,7 +104,7 @@ $JAVA_HOME/bin/jpackage \
   --main-class com.willwinder.universalgcodesender.fx.Launcher \
   --main-jar ${MAIN_JAR} \
   --resource-dir installer \
-  --java-options "-XX:MaxRAMPercentage=85.0 -Dprism.forceGPU=true -Djavafx.preloader=com.willwinder.universalgcodesender.fx.Preloader"  \
+  --java-options "--enable-native-access=ALL-UNNAMED -XX:MaxRAMPercentage=85.0 -Dprism.forceGPU=true -Djavafx.preloader=com.willwinder.universalgcodesender.fx.Preloader"  \
   --runtime-image target/java-runtime \
   --app-version ${APP_VERSION} \
   --copyright "Joacim Breiler" \
@@ -141,7 +141,7 @@ $JAVA_HOME/bin/jpackage \
   --main-class com.willwinder.universalgcodesender.fx.Launcher \
   --main-jar ${MAIN_JAR} \
   --resource-dir installer \
-  --java-options "-XX:MaxRAMPercentage=85.0 -Dprism.forceGPU=true  -Djavafx.preloader=com.willwinder.universalgcodesender.fx.Preloader"  \
+  --java-options "--enable-native-access=ALL-UNNAMED -XX:MaxRAMPercentage=85.0 -Dprism.forceGPU=true  -Djavafx.preloader=com.willwinder.universalgcodesender.fx.Preloader"  \
   --runtime-image target/java-runtime \
   --app-version ${APP_VERSION} \
   --vendor "Universal G-code Sender" \
